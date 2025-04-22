@@ -1,0 +1,756 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Patient Management</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary-color: #4361ee;
+    --primary-light: #e6e9ff;
+    --secondary-color: #3a0ca3;
+    --accent-color: #7209b7;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --gray-color: #6c757d;
+    --light-gray: #f1f3f9;
+    --success-color: #4cc9f0;
+    --info-color: #4895ef;
+    --warning-color: #f72585;
+    --danger-color: #ef233c;
+    --sidebar-width: 260px;
+    --nav-height: 70px;
+    --card-radius: 12px;
+    --transition-speed: 0.3s;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    background-color: var(--light-gray);
+    color: var(--dark-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top Navigation Styles */
+.top-nav {
+    background: white;
+    color: var(--dark-color);
+    padding: 0 1.5rem;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: var(--nav-height);
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-logo i {
+    color: var(--accent-color);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--dark-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform var(--transition-speed);
+}
+
+.mobile-menu-btn:hover {
+    transform: scale(1.1);
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 1rem;
+    margin-left: 2rem;
+}
+
+.nav-link {
+    color: var(--gray-color);
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: all var(--transition-speed) ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    position: relative;
+}
+
+.nav-link i {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.user-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    font-weight: 500;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem 0;
+    min-width: 200px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all var(--transition-speed);
+}
+
+.user-info:hover .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-dropdown-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.75rem 1rem;
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+}
+
+.user-dropdown-link:hover {
+    background-color: var(--light-gray);
+    color: var(--primary-color);
+}
+
+.user-dropdown-link i {
+    width: 20px;
+    color: var(--gray-color);
+}
+
+.logout-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.logout-btn:hover {
+    background-color: #d90429;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    color: var(--dark-color);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-title i {
+    color: var(--primary-color);
+}
+
+.breadcrumb {
+    font-size: 0.9rem;
+    color: var(--gray-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.breadcrumb a {
+    color: var(--gray-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+}
+
+.breadcrumb a:hover {
+    color: var(--primary-color);
+}
+
+.breadcrumb .separator {
+    opacity: 0.6;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--card-radius);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alert-success {
+    background-color: rgba(76, 201, 240, 0.1);
+    border-left: 4px solid var(--success-color);
+    color: var(--dark-color);
+}
+
+.alert-danger {
+    background-color: rgba(239, 35, 60, 0.1);
+    border-left: 4px solid var(--danger-color);
+    color: var(--dark-color);
+}
+
+.alert i {
+    font-size: 1.2rem;
+}
+
+.alert-success i {
+    color: var(--success-color);
+}
+
+.alert-danger i {
+    color: var(--danger-color);
+}
+
+/* Patient Table Styles */
+.add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--card-radius);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+}
+
+.add-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.add-btn i {
+    font-size: 0.9rem;
+}
+
+.patient-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.patient-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+.patient-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.patient-table tr:last-child td {
+    border-bottom: none;
+}
+
+.patient-table tr:hover {
+    background-color: var(--primary-light);
+}
+
+.action-btns {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--card-radius);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.edit-btn {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #3aa8d8;
+    transform: translateY(-2px);
+}
+
+.delete-btn {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #d90429;
+    transform: translateY(-2px);
+}
+
+.action-btn i {
+    font-size: 0.8rem;
+}
+
+.delete-form {
+    display: inline;
+}
+
+/* Footer Styles */
+.footer {
+    background-color: white;
+    color: var(--gray-color);
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    margin-top: auto;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1800px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-link {
+    color: var(--gray-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+    font-size: 0.85rem;
+}
+
+.footer-link:hover {
+    color: var(--primary-color);
+}
+
+.copyright {
+    color: var(--gray-color);
+    font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+    
+    .nav-menu {
+        position: fixed;
+        top: var(--nav-height);
+        left: -100%;
+        width: 280px;
+        height: calc(100vh - var(--nav-height));
+        background: white;
+        flex-direction: column;
+        gap: 0;
+        padding: 1rem 0;
+        transition: left var(--transition-speed) ease;
+        z-index: 999;
+        overflow-y: auto;
+        box-shadow: var(--shadow-lg);
+        border-right: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+    }
+    
+    .nav-link.active {
+        border-left-color: var(--primary-color);
+        background-color: var(--primary-light);
+    }
+    
+    .nav-link.active::after {
+        display: none;
+    }
+    
+    .user-actions {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .brand-logo {
+        font-size: 1.3rem;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .user-name {
+        display: none;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .footer-links {
+        order: 1;
+    }
+    
+    .copyright {
+        order: 2;
+    }
+    
+    .action-btns {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    .logout-btn span {
+        display: none;
+    }
+    
+    .logout-btn {
+        padding: 0.5rem;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+    }
+    
+    .main-content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .patient-table th, 
+    .patient-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="brand">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="brand-logo">
+                        <i class="fas fa-heartbeat"></i> HealthCare Admin
+                    </span>
+                </div>
+                
+                <ul class="nav-menu" id="navMenu">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/DashboardServlet" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span class="nav-link-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/DoctorListServlet" class="nav-link">
+                            <i class="fas fa-user-md"></i>
+                            <span class="nav-link-text">Doctors</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/PatientListServlet" class="nav-link active">
+                            <i class="fas fa-procedures"></i>
+                            <span class="nav-link-text">Patients</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/AppointmentListServlet" class="nav-link">
+                            <i class="fas fa-calendar-check"></i>
+                            <span class="nav-link-text">Appointments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/MedicalRecordListServlet" class="nav-link">
+                            <i class="fas fa-file-medical"></i>
+                            <span class="nav-link-text">Medical Records</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="user-actions">
+                    <div class="user-info">
+                        <div class="user-avatar">${user.username.charAt(0)}</div>
+                        <span class="user-name">${user.username}</span>
+                        <div class="user-dropdown">
+                            <a href="#" class="user-dropdown-link">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a href="${pageContext.request.contextPath}/UserSettingsServlet" class="user-dropdown-link">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <a href="#" class="user-dropdown-link">
+                                <i class="fas fa-bell"></i> Notifications
+                            </a>
+                        </div>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
+                        <button type="submit" class="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-procedures"></i> Patient Management
+                </h1>
+                <div class="breadcrumb">
+                    <a href="${pageContext.request.contextPath}/DashboardServlet">Home</a> 
+                    <span class="separator">/</span> 
+                    <span>Patients</span>
+                </div>
+            </div>
+
+            <c:if test="${not empty message}">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> ${message}
+                </div>
+                <c:remove var="message" scope="session" />
+            </c:if>
+
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> ${error}
+                </div>
+                <c:remove var="error" scope="session" />
+            </c:if>
+
+            <a href="${pageContext.request.contextPath}/view/addPatient.jsp" class="add-btn">
+                <i class="fas fa-plus"></i> Add New Patient
+            </a>
+
+            <table class="patient-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="patient" items="${patients}">
+                        <tr>
+                            <td>${patient.patientId}</td>
+                            <td>${patient.name}</td>
+                            <td>${patient.phone}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <a href="${pageContext.request.contextPath}/EditPatientServlet?id=${patient.patientId}" 
+                                       class="action-btn edit-btn">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form class="delete-form" 
+                                          action="${pageContext.request.contextPath}/DeletePatientServlet" 
+                                          method="post">
+                                        <input type="hidden" name="id" value="${patient.patientId}">
+                                        <button type="submit" class="action-btn delete-btn">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About Us</a>
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+                <div class="copyright">
+                    &copy; 2023 Healthcare Admin System. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

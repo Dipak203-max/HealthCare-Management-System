@@ -1,0 +1,240 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" 
+    pageEncoding="UTF-8" isELIgnored="false" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Healthcare System - Login</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5649c0;
+            --secondary: #00cec9;
+            --dark: #1e272e;
+            --darker: #161d22;
+            --light: #f5f6fa;
+            --danger: #ff7675;
+            --success: #55efc4;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 206, 201, 0.1) 0%, transparent 20%);
+        }
+        
+        .login-container {
+            background-color: var(--darker);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 380px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--light);
+            position: relative;
+        }
+        
+        .login-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .login-header p {
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .login-header a {
+            color: var(--secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .login-header a:hover {
+            color: var(--primary);
+        }
+        
+        .error-message {
+            color: var(--danger);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem;
+            background-color: rgba(255, 118, 117, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--danger);
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--light);
+            font-size: 0.9rem;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            box-sizing: border-box;
+            color: var(--light);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
+            background-color: rgba(108, 92, 231, 0.05);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .login-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .login-links a {
+            color: var(--secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+            position: relative;
+            padding-bottom: 2px;
+        }
+        
+        .login-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: var(--secondary);
+            transition: width 0.3s;
+        }
+        
+        .login-links a:hover::after {
+            width: 100%;
+        }
+        
+        .role-selector {
+            position: relative;
+        }
+        
+        .role-selector::after {
+            content: '▼';
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Healthcare System Login</h2>
+            <p><a href="${pageContext.request.contextPath}/index.jsp">← Back to Home</a></p>
+        </div>
+        
+        <% if (request.getAttribute("errorMessage") != null) { %>
+            <div class="error-message">
+                <%= request.getAttribute("errorMessage") %>
+            </div>
+        <% } %>
+        
+        <form action="${pageContext.request.contextPath}/LoginServlet" method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+            
+            <div class="form-group role-selector">
+                <label for="role">Role</label>
+                <select id="role" name="role" required>
+                    <option value="">Select Your Role</option>
+                    <option value="admin">Administrator</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="patient">Patient</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-login">Login</button>
+            
+            <div class="login-links">
+                <a href="${pageContext.request.contextPath}/admin/forgot-password.jsp">Forgot Password (Admin)</a>
+                <a href="${pageContext.request.contextPath}/patient/register.jsp">Create Account (Patient)</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

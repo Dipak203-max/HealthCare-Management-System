@@ -1,0 +1,123 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- ... existing head content ... -->
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- ... existing sidebar ... -->
+        
+        <div class="main-content">
+            <header class="header">
+                <h3>User Settings</h3>
+            </header>
+            
+            <c:if test="${not empty message}">
+                <div class="alert ${success ? 'alert-success' : 'alert-danger'}">
+                    ${message}
+                </div>
+            </c:if>
+            
+            <div class="settings-container">
+                <div class="tab-container">
+                    <div class="tab active" onclick="showTab('password')">Change Password</div>
+                    <c:if test="${currentUser.role == 'admin'}">
+                        <div class="tab" onclick="showTab('adminTools')">Admin Tools</div>
+                    </c:if>
+                </div>
+                
+                <!-- Password Change Tab (for all users) -->
+                <div id="passwordTab" class="settings-section">
+                    <h3>Change Your Password</h3>
+                    <form action="${pageContext.request.contextPath}/UserSettingsServlet" method="post">
+                        <input type="hidden" name="action" value="updatePassword">
+                        
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" name="currentPassword" 
+                                   class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" name="newPassword" 
+                                   class="form-control" required minlength="6">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" 
+                                   class="form-control" required minlength="6">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </form>
+                </div>
+                
+                <!-- Admin Tools Tab -->
+                <c:if test="${currentUser.role == 'admin'}">
+                    <div id="adminToolsTab" class="settings-section" style="display: none;">
+                        <h3>Reset User Passwords</h3>
+                        <form action="${pageContext.request.contextPath}/UserSettingsServlet" method="post">
+                            <input type="hidden" name="action" value="resetUserPassword">
+                            
+                            <div class="form-group">
+                                <label for="userId">Select User</label>
+                                <select id="userId" name="userId" class="form-control" required>
+                                    <option value="">-- Select User --</option>
+                                    <c:forEach var="user" items="${allUsers}">
+                                        <option value="${user.id}">
+                                            ${user.username} (${user.role})
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newPasswordAdmin">New Password</label>
+                                <input type="password" id="newPasswordAdmin" name="newPassword" 
+                                       class="form-control" required minlength="6">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Reset Password</button>
+                        </form>
+                    </div>
+                </c:if>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            document.getElementById('passwordTab').style.display = 'none';
+            <c:if test="${currentUser.role == 'admin'}">
+                document.getElementById('adminToolsTab').style.display = 'none';
+            </c:if>
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab and mark as active
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Client-side validation for password match
+        document.querySelector('form[name="action"][value="updatePassword"]').addEventListener('submit', function(e) {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                e.preventDefault();
+                alert('New passwords do not match!');
+            }
+        });
+    </script>
+</body>
+</html>

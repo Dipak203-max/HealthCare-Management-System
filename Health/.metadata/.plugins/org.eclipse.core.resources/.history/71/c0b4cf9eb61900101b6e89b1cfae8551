@@ -1,0 +1,25 @@
+package util;
+
+import java.io.InputStream;
+import java.util.Properties;
+
+public class PropertyUtil {
+	
+	private static final Properties properties = new Properties();
+	
+	static {
+		try(InputStream inputStream = PropertyUtil.class.getClassLoader().getResourceAsStream("config.properties")){
+			if(inputStream == null) {
+				System.out.print("Unble to find config.properties.");
+			}
+			properties.load(inputStream);
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	
+	public static String getProperty(String key) {
+		return "/" + properties.getProperty(key).trim();
+    }
+}

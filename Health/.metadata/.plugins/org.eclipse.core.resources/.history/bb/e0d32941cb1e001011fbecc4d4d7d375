@@ -1,0 +1,101 @@
+package controller;
+
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Time;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.AppointmentDao;
+import dao.DoctorDao;
+import dao.PatientDao;
+import model.Appointment;
+import model.Patient;
+import model.User;
+
+@WebServlet("/AddAppointmentServlet")
+public class AddAppointmentServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/view/login.jsp");
+            return;
+        }
+        
+        User user = (User) session.getAttribute("user");
+        String redirectPage = "/PatientDashboardServlet";
+        
+        try {
+            PatientDao patientDao = new PatientDao();
+            Patient patient = patientDao.getPatientByUserId(user.getId());
+            
+            if (patient == null) {
+                session.setAttribute("error", "Patient profile not found");
+                response.sendRedirect(request.getContextPath() + redirectPage);
+                return;
+            }
+            
+            System.out.println("Booking appointment for patient: " + 
+                             patient.getName() + " (ID: " + patient.getPatientId() + ")");
+            
+            int doctorId = Integer.parseInt(request.getParameter("doctorId"));
+            Date date = Date.valueOf(request.getParameter("date"));
+            Time time = Time.valueOf(request.getParameter("time") + ":00");
+            String status = "pending";
+
+            // First validate the doctor exists using the doctorId we just parsed
+            DoctorDao doctorDao = new DoctorDao();
+            if (!doctorDao.doctorExists(doctorId)) {
+                session.setAttribute("error", "Selected doctor does not exist");
+                response.sendRedirect(request.getContextPath() + "/patient/schedule.jsp");
+                return;
+            }
+
+            // Now create the appointment object
+            Appointment appointment = new Appointment();
+            appointment.setPatientId(patient.getPatientId());
+            appointment.setDoctorId(doctorId);
+            appointment.setDate(date);
+            appointment.setTime(time);
+            appointment.setStatus(status);
+
+            AppointmentDao appointmentDao = new AppointmentDao();
+            boolean success = appointmentDao.addAppointment(appointment);
+
+            if (success) {
+                session.setAttribute("message", "Appointment scheduled successfully");
+            } else {
+                session.setAttribute("error", "Failed to schedule appointment");
+            }
+            
+            // Redirect based on user role
+            switch(user.getRole()) {
+                case "admin":
+                    redirectPage = "/AppointmentListServlet";
+                    break;
+                case "doctor":
+                    redirectPage = "/DoctorAppointmentsServlet";
+                    break;
+                case "patient":
+                default:
+                    redirectPage = "/PatientDashboardServlet";
+            }
+            
+        } catch (IllegalArgumentException e) {
+            session.setAttribute("error", "Invalid date or time format");
+            redirectPage = "/patient/schedule.jsp";
+        } catch (SQLException e) {
+            session.setAttribute("error", "Database error: " + e.getMessage());
+        } catch (Exception e) {
+            session.setAttribute("error", "Error scheduling appointment: " + e.getMessage());
+        }
+        
+        response.sendRedirect(request.getContextPath() + redirectPage);
+    }
+}

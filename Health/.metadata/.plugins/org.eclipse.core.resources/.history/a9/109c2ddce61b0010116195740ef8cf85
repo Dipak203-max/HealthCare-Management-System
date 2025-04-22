@@ -1,0 +1,315 @@
+
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Doctor Dashboard</title>
+
+<style>
+
+:root {
+	--primary-color: #3498db;
+	--secondary-color: #2980b9;
+	--light-color: #ecf0f1;
+	--dark-color: #2c3e50;
+	--danger-color: #e74c3c;
+	--success-color: #2ecc71;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+	background-color: #f5f5f5;
+	color: #333;
+}
+
+.dashboard-container {
+	display: grid;
+	grid-template-columns: 250px 1fr;
+	min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+	background-color: var(--dark-color);
+	color: white;
+	padding: 20px 0;
+}
+
+.sidebar-header {
+	padding: 0 20px 20px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav {
+	margin-top: 20px;
+}
+
+.nav-item {
+	padding: 12px 20px;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+
+.nav-item:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item.active {
+	background-color: var(--primary-color);
+}
+
+/* Main Content Styles */
+.main-content {
+	padding: 20px;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px 20px;
+	background-color: white;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	margin-bottom: 20px;
+}
+
+.user-info {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.logout-btn {
+	background-color: var(--danger-color);
+	color: white;
+	border: none;
+	padding: 8px 15px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.card-container {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 20px;
+}
+
+.card {
+	background-color: white;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #eee;
+}
+
+.card-title {
+	font-size: 1.2rem;
+	color: var(--dark-color);
+}
+
+.btn {
+	padding: 8px 15px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 500;
+}
+
+.btn-primary {
+	background-color: var(--primary-color);
+	color: white;
+}
+
+.btn-primary:hover {
+	background-color: var(--secondary-color);
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+th, td {
+	padding: 12px;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}
+
+th {
+	background-color: var(--light-color);
+}
+.appointments-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+.appointments-table th, .appointments-table td {
+	padding: 12px;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}
+
+.appointments-table th {
+	background-color: #3498db;
+	color: white;
+}
+
+.status-scheduled {
+	color: #f39c12;
+	font-weight: bold;
+}
+
+.status-completed {
+	color: #2ecc71;
+	font-weight: bold;
+}
+
+.status-cancelled {
+	color: #e74c3c;
+	font-weight: bold;
+}
+
+.action-btn {
+	padding: 6px 12px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 14px;
+	margin-right: 5px;
+}
+
+.complete-btn {
+	background-color: #2ecc71;
+	color: white;
+}
+
+.cancel-btn {
+	background-color: #e74c3c;
+	color: white;
+}
+</style>
+</head>
+<body>
+	<div class="dashboard-container">
+		<div class="dashboard-container">
+		<!-- Sidebar -->
+		<div class="sidebar">
+			<div class="sidebar-header">
+				<h2>Doctor Panel</h2>
+			</div>
+			<nav class="sidebar-nav">
+				<div class="nav-item active">
+					<span>Dashboard</span>
+				</div>
+				<div class="nav-item">
+					<span>My Appointments</span>
+				</div>
+				<div class="nav-item">
+					<span>Patient Records</span>
+				</div>
+				<div class="nav-item">
+					<span>Prescriptions</span>
+				</div>
+				<div class="nav-item">
+					<span>Schedule</span>
+				</div>
+				<a href="${pageContext.request.contextPath}/UserSettingsServlet"
+					style="color: white; text-decoration: none;"> <span>Settings</span>
+				</a>
+			</nav>
+		</div>
+		<!-- Main Content -->
+		<div class="main-content">
+			<header class="header">
+				<h3>Doctor Dashboard</h3>
+				<div class="user-info">
+					<span>Welcome, Dr. <strong>${user.username}</strong></span>
+					<form action="${pageContext.request.contextPath}/LogoutServlet"
+						method="post">
+						<button type="submit" class="logout-btn">Logout</button>
+					</form>
+				</div>
+			</header>
+
+			<!-- Today's Appointments Card -->
+			<div class="card">
+				<div class="card-header">
+					<span class="card-title">Today's Appointments</span> <span
+						class="badge">${todaysAppointments}</span>
+				</div>
+
+				<!-- Appointments Table -->
+				<table class="appointments-table">
+					<thead>
+						<tr>
+							<th>Time</th>
+							<th>Patient</th>
+							<th>Date</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="appointment" items="${doctorAppointments}">
+							<tr>
+								<td><fmt:formatDate value="${appointment.time}"
+										pattern="HH:mm" /></td>
+								<td>${appointment.patientName}</td>
+								<td><fmt:formatDate value="${appointment.date}"
+										pattern="yyyy-MM-dd" /></td>
+								<td class="status-${appointment.status.toLowerCase()}">
+									${appointment.status}</td>
+								<td><c:if test="${appointment.status == 'SCHEDULED'}">
+										<form
+											action="${pageContext.request.contextPath}/UpdateAppointmentStatusServlet"
+											method="post" style="display: inline;">
+											<input type="hidden" name="appointmentId"
+												value="${appointment.appointmentId}"> <input
+												type="hidden" name="status" value="COMPLETED">
+											<button type="submit" class="action-btn complete-btn">Complete</button>
+										</form>
+										<form
+											action="${pageContext.request.contextPath}/UpdateAppointmentStatusServlet"
+											method="post" style="display: inline;">
+											<input type="hidden" name="appointmentId"
+												value="${appointment.appointmentId}"> <input
+												type="hidden" name="status" value="CANCELLED">
+											<button type="submit" class="action-btn cancel-btn">Cancel</button>
+										</form>
+									</c:if></td>
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Font Awesome for icons -->
+			<script src="https://kit.fontawesome.com/a076d05399.js"
+				crossorigin="anonymous"></script>
+		</div>
+	</div>
+</body>
+</html>

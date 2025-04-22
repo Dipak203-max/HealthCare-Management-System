@@ -1,0 +1,36 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import model.User;
+import util.DBUtil;
+
+public class UserDao {
+	public User getUserByCredentials(String username, String password, String role) {
+		
+		User user = null;
+		String sql = "select * from users where username= ? and password =? and role = ?";
+		
+		try(Connection connection = DBUtil.getConnection();
+				PreparedStatement prepareStatement = connection.prepareStatement(sql)){
+				prepareStatement.setString(1, username);
+				prepareStatement.setString(2, password);
+				prepareStatement.setString(3, role);
+				
+				try(ResultSet resultSet = prepareStatement.executeQuery()){
+					if(resultSet.next()) {
+						 user = new User();
+		                 user.setUsername(resultSet.getString("username"));
+		                 user.setPassword(resultSet.getString("password"));
+		                 user.setRole(resultSet.getString("role"));
+					}
+				}
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		return user;
+		
+	}
+}

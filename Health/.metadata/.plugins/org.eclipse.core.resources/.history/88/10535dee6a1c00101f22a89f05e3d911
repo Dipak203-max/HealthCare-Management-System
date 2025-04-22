@@ -1,0 +1,274 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Records</title>
+    <style>
+        /* Inherit styles from admin dashboard */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Reuse sidebar styles from admin dashboard */
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* Medical records specific styles */
+        .record-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .record-table th, .record-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .record-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .record-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .record-details {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        
+        .view-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .report-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .add-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        /* Modal styles for detailed view */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Reuse the sidebar from admin dashboard -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Healthcare Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="${pageContext.request.contextPath}/DashboardServlet" style="color: white; text-decoration: none;">
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="${pageContext.request.contextPath}/DoctorListServlet" style="color: white; text-decoration: none;">
+                        <span>Doctors</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="${pageContext.request.contextPath}/PatientListServlet" style="color: white; text-decoration: none;">
+                        <span>Patients</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="${pageContext.request.contextPath}/AppointmentListServlet" style="color: white; text-decoration: none;">
+                        <span>Appointments</span>
+                    </a>
+                </div>
+                <div class="nav-item active">
+                    <span>Medical Records</span>
+                </div>
+            </nav>
+        </div>
+        
+        <!-- Main content area -->
+        <div class="main-content">
+            <header class="header">
+                <h3>Medical Records Management</h3>
+                <div class="user-info">
+                    <span>Welcome, <strong>${user.username}</strong> (Admin)</span>
+                    <form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
+                        <button type="submit" class="logout-btn">Logout</button>
+                    </form>
+                </div>
+            </header>
+            
+            <a href="#" class="add-btn">Add New Record</a>
+            
+            <table class="record-table">
+                <thead>
+                    <tr>
+                        <th>Record ID</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>Diagnosis</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="record" items="${records}">
+                        <tr>
+                            <td>${record.recordId}</td>
+                            <td>${record.patientName}</td>
+                            <td>Dr. ${record.doctorName}</td>
+                            <td><fmt:formatDate value="${record.createdAt}" pattern="yyyy-MM-dd HH:mm" /></td>
+                            <td class="record-details" title="${record.diagnosis}">
+                                ${record.diagnosis}
+                            </td>
+                            <td>
+                                <button onclick="showRecordDetails(${record.recordId})" class="action-btn view-btn">View</button>
+                                <a href="GenerateReportServlet?recordId=${record.recordId}" class="action-btn report-btn">Generate Report</a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for detailed view -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Medical Record Details</h3>
+            <div id="modalContent">
+                <!-- Content will be loaded via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const modal = document.getElementById("recordModal");
+        const span = document.getElementsByClassName("close")[0];
+        
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        function showRecordDetails(recordId) {
+            // In a real application, you would fetch this data from the server
+            // For demo, we'll use the data from the table
+            const recordRow = document.querySelector(`tr:has(td:first-child:contains("${recordId}")`);
+            
+            const patient = recordRow.cells[1].textContent;
+            const doctor = recordRow.cells[2].textContent;
+            const date = recordRow.cells[3].textContent;
+            const diagnosis = recordRow.cells[4].title;
+            
+            // Find treatment (this would normally come from server)
+            const treatment = "Treatment details would appear here";
+            
+            const modalContent = `
+                <p><strong>Record ID:</strong> ${recordId}</p>
+                <p><strong>Patient:</strong> ${patient}</p>
+                <p><strong>Doctor:</strong> ${doctor}</p>
+                <p><strong>Date:</strong> ${date}</p>
+                <h4>Diagnosis:</h4>
+                <p>${diagnosis}</p>
+                <h4>Treatment:</h4>
+                <p>${treatment}</p>
+            `;
+            
+            document.getElementById("modalContent").innerHTML = modalContent;
+            modal.style.display = "block";
+        }
+    </script>
+</body>
+</html>

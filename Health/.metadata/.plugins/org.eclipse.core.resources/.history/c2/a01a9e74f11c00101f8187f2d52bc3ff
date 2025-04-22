@@ -1,0 +1,626 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Doctor Schedule</title>
+<style>
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2980b9;
+    --light-color: #ecf0f1;
+    --dark-color: #2c3e50;
+    --danger-color: #e74c3c;
+    --success-color: #2ecc71;
+    --purple-color: #9b59b6;
+    --warning-color: #f39c12;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav {
+    margin-top: 20px;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 20px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background-color: var(--primary-color);
+}
+
+/* Main Content Styles */
+.main-content {
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logout-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.appointments-table th, 
+.appointments-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.appointments-table th {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.appointments-table tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.status {
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status-scheduled {
+    color: var(--warning-color);
+}
+
+.status-completed {
+    color: var(--success-color);
+}
+
+.status-cancelled {
+    color: var(--danger-color);
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 5px;
+    transition: opacity 0.3s;
+}
+
+.action-btn:hover {
+    opacity: 0.9;
+}
+
+.complete-btn {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.cancel-btn {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.add-record-btn {
+    background-color: var(--purple-color);
+    color: white;
+}
+
+.specialization {
+    font-style: italic;
+    color: #555;
+}
+
+.form-inline {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.message {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    color: white;
+}
+
+.message-success {
+    background-color: var(--success-color);
+}
+
+.message-error {
+    background-color: var(--danger-color);
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        height: auto;
+        position: relative;
+    }
+    
+    .appointments-table {
+        display: block;
+        overflow-x: auto;
+    }
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar-title {
+    font-size: 1.5rem;
+    color: var(--dark-color);
+}
+
+.calendar-view {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.day-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+.day-cell {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 100px;
+    padding: 5px;
+}
+
+.day-number {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.appointment-item {
+    background-color: var(--light-color);
+    padding: 5px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.appointment-item:hover {
+    background-color: #d6eaf8;
+}
+
+.appointment-time {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.appointment-patient {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.view-type {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.view-btn {
+    padding: 8px 15px;
+    background-color: white;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.view-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.view-btn:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.view-btn:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table th {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+.schedule-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.schedule-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.schedule-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.time-cell {
+    font-weight: bold;
+    color: var(--dark-color);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.badge-scheduled {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.badge-completed {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-cancelled {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .calendar-view {
+        grid-template-columns: 1fr;
+    }
+    
+    .day-cell {
+        min-height: auto;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (same as dashboard.jsp) -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Doctor Panel</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="${pageContext.request.contextPath}/DashboardServlet" 
+                   class="nav-link ${activePage == 'dashboard' ? 'active' : ''}">
+                    <span>Dashboard</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/DoctorAppointmentsServlet" 
+                   class="nav-link ${activePage == 'appointments' ? 'active' : ''}">
+                    <span>My Appointments</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/PatientRecordsServlet" 
+                   class="nav-link ${activePage == 'records' ? 'active' : ''}">
+                    <span>Patient Records</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/DoctorScheduleServlet" 
+                   class="nav-link ${activePage == 'schedule' ? 'active' : ''}">
+                    <span>Schedule</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/UserSettingsServlet" 
+                   class="nav-link">
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header">
+                <h3>My Schedule</h3>
+                <div class="user-info">
+                    <span>Welcome, Dr. <strong>${user.username}</strong></span>
+                    <form action="${pageContext.request.contextPath}/LogoutServlet" method="post" class="form-inline">
+                        <button type="submit" class="logout-btn">Logout</button>
+                    </form>
+                </div>
+            </header>
+
+            <!-- Display messages -->
+            <c:if test="${not empty message}">
+                <div class="message message-success">${message}</div>
+            </c:if>
+            <c:if test="${not empty error}">
+                <div class="message message-error">${error}</div>
+            </c:if>
+
+            <!-- View Type Selector -->
+            <div class="view-type">
+                <button class="view-btn active" onclick="showView('calendar')">Calendar View</button>
+                <button class="view-btn" onclick="showView('list')">List View</button>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="calendar-view">
+                <div class="calendar-header">
+                    <h2 class="calendar-title">
+                        <fmt:formatDate value="${currentDate}" pattern="MMMM yyyy" />
+                    </h2>
+                    <div class="calendar-nav">
+                        <button class="btn btn-primary">Previous</button>
+                        <button class="btn btn-primary">Today</button>
+                        <button class="btn btn-primary">Next</button>
+                    </div>
+                </div>
+
+                <div class="calendar-view">
+                    <div class="day-header">Sunday</div>
+                    <div class="day-header">Monday</div>
+                    <div class="day-header">Tuesday</div>
+                    <div class="day-header">Wednesday</div>
+                    <div class="day-header">Thursday</div>
+                    <div class="day-header">Friday</div>
+                    <div class="day-header">Saturday</div>
+
+                    <!-- Calendar days would be generated here -->
+                    <c:forEach begin="1" end="35" varStatus="loop">
+                        <div class="day-cell">
+                            <div class="day-number">${loop.index}</div>
+                            <!-- Sample appointment - in real app, this would come from data -->
+                            <div class="appointment-item">
+                                <div class="appointment-time">10:00 AM</div>
+                                <div class="appointment-patient">John Doe</div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+
+            <!-- List View (hidden by default) -->
+            <div id="list-view" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Upcoming Appointments</span>
+                    </div>
+                    <div class="card-body">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="appointment" items="${schedule}">
+                                    <tr>
+                                        <td><fmt:formatDate value="${appointment.date}" pattern="EEE, MMM d" /></td>
+                                        <td class="time-cell"><fmt:formatDate value="${appointment.time}" pattern="h:mm a" /></td>
+                                        <td>${appointment.patientName}</td>
+                                        <td>
+                                            <span class="status-badge badge-${appointment.status.toLowerCase()}">
+                                                ${appointment.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <form action="${pageContext.request.contextPath}/UpdateAppointmentStatusServlet"
+                                                method="post" class="form-inline">
+                                                <input type="hidden" name="appointmentId" value="${appointment.appointmentId}">
+                                                <c:if test="${appointment.status == 'SCHEDULED'}">
+                                                    <input type="hidden" name="status" value="COMPLETED">
+                                                    <button type="submit" class="action-btn complete-btn">Complete</button>
+                                                </c:if>
+                                                <c:if test="${appointment.status != 'CANCELLED'}">
+                                                    <input type="hidden" name="status" value="CANCELLED">
+                                                    <button type="submit" class="action-btn cancel-btn">Cancel</button>
+                                                </c:if>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // View toggle functionality
+        function showView(viewType) {
+            const calendarView = document.getElementById('calendar-view');
+            const listView = document.getElementById('list-view');
+            const viewButtons = document.querySelectorAll('.view-btn');
+            
+            if (viewType === 'calendar') {
+                calendarView.style.display = 'block';
+                listView.style.display = 'none';
+                viewButtons[0].classList.add('active');
+                viewButtons[1].classList.remove('active');
+            } else {
+                calendarView.style.display = 'none';
+                listView.style.display = 'block';
+                viewButtons[0].classList.remove('active');
+                viewButtons[1].classList.add('active');
+            }
+        }
+        
+        // Clear messages after 5 seconds
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => {
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 5000);
+        
+        
+     // Calendar navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentDate = new Date();
+            let currentMonth = currentDate.getMonth();
+            let currentYear = currentDate.getFullYear();
+            
+            // Initial calendar render
+            renderCalendar(currentMonth, currentYear);
+            
+            // Navigation buttons
+            document.querySelector('.calendar-nav button:nth-child(1)').addEventListener('click', function() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+            
+            document.querySelector('.calendar-nav button:nth-child(2)').addEventListener('click', function() {
+                currentMonth = currentDate.getMonth();
+                currentYear = currentDate.getFullYear();
+                renderCalendar(currentMonth, currentYear);
+            });
+            
+            document.querySelector('.calendar-nav button:nth-child(3)').addEventListener('click', function() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+            
+            function renderCalendar(month, year) {
+                const monthNames = ["January", "February", "March", "April", "May", "June",
+                                  "July", "August", "September", "October", "November", "December"];
+                
+                // Update calendar title
+                document.querySelector('.calendar-title').textContent = monthNames[month] + ' ' + year;
+                
+                // In a real application, you would fetch appointments for this month
+                // and populate the calendar cells accordingly
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import model.Patient;
+import util.DBUtil;
+
+public class PatientDao {
+	public List<Patient> getAllPatients() {
+	    List<Patient> patients = new ArrayList<>();
+	    
+	    // Start with simple query - remove JOIN temporarily
+	    String sql = "SELECT patient_id, id, name, phone FROM patients";
+	    
+	    System.out.println("DEBUG: Executing patient query: " + sql);
+	    
+	    try (Connection connection = DBUtil.getConnection();
+	         PreparedStatement statement = connection.prepareStatement(sql);
+	         ResultSet resultSet = statement.executeQuery()) {
+	        
+	        System.out.println("DEBUG: Query executed, checking results...");
+	        
+	        while (resultSet.next()) {
+	            Patient patient = new Patient();
+	            patient.setPatientId(resultSet.getInt("patient_id"));
+	            patient.setUserId(resultSet.getInt("id"));
+	            patient.setName(resultSet.getString("name"));
+	            patient.setPhone(resultSet.getString("phone"));
+	            
+	            System.out.println("DEBUG: Found patient - ID: " + patient.getPatientId() 
+	                + ", Name: " + patient.getName());
+	            
+	            patients.add(patient);
+	        }
+	        
+	        System.out.println("DEBUG: Total patients found: " + patients.size());
+	        
+	    } catch (SQLException e) {
+	        System.err.println("ERROR in getAllPatients: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return patients;
+	}
+}

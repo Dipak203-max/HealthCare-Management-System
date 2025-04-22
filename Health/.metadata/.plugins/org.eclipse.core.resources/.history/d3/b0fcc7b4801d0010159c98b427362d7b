@@ -1,0 +1,755 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Patient Records</title>
+<style>
+:root {
+    --primary-color: #6c5ce7;
+    --secondary-color: #a29bfe;
+    --accent-color: #fd79a8;
+    --success-color: #00b894;
+    --warning-color: #fdcb6e;
+    --danger-color: #d63031;
+    --info-color: #0984e3;
+    --dark-color: #2d3436;
+    --darker-color: #1e272e;
+    --light-color: #f5f6fa;
+    --text-color: #dfe6e9;
+    --sidebar-bg: #1a1a2e;
+    --card-bg: #16213e;
+    --header-bg: #0f3460;
+    --footer-bg: #1a1a2e;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    background-color: var(--darker-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--header-bg) 0%, var(--dark-color) 100%);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-title::before {
+    content: "⚕️";
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-greeting {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+
+.username {
+    font-weight: 600;
+    color: white;
+}
+
+/* Navigation Bar */
+.nav-bar {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 2rem;
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-link {
+    padding: 0.5rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 8px rgba(108, 92, 231, 0.3);
+}
+
+.nav-link::before {
+    font-size: 1.1rem;
+}
+
+.nav-link[href*="Dashboard"]::before {
+    content: "📊";
+}
+
+.nav-link[href*="Appointments"]::before {
+    content: "📅";
+}
+
+.nav-link[href*="Records"]::before {
+    content: "📋";
+}
+
+.nav-link[href*="Schedule"]::before {
+    content: "⏰";
+}
+
+.nav-link[href*="Settings"]::before {
+    content: "⚙️";
+}
+
+/* Main Content */
+.main-container {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    padding: 1.5rem 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.sidebar-title {
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-title::before {
+    content: "👨‍⚕️";
+}
+
+.quick-stats {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin: 0 1rem 1rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    background-color: var(--darker-color);
+}
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-title {
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-title::before {
+    font-size: 1.1rem;
+}
+
+.records-card .card-title::before {
+    content: "📋";
+}
+
+/* Table Styles */
+.appointments-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.appointments-table thead {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
+    color: white;
+}
+
+.appointments-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.appointments-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+}
+
+.appointments-table tr:last-child td {
+    border-bottom: none;
+}
+
+.appointments-table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Button Styles */
+.action-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.view-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.view-btn::before {
+    content: "👁️";
+}
+
+.edit-btn {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.edit-btn::before {
+    content: "✏️";
+}
+
+.print-btn {
+    background-color: var(--dark-color);
+    color: white;
+}
+
+.print-btn::before {
+    content: "🖨️";
+}
+
+.add-record-btn {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.add-record-btn::before {
+    content: "➕";
+}
+
+.logout-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(214, 48, 49, 0.3);
+}
+
+.logout-btn::before {
+    content: "🚪";
+}
+
+/* Messages */
+.message {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeIn 0.5s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.message::before {
+    font-size: 1.2rem;
+}
+
+.message-success {
+    background-color: var(--success-color);
+    border-left: 5px solid darken(var(--success-color), 10%);
+}
+
+.message-success::before {
+    content: "✅";
+}
+
+.message-error {
+    background-color: var(--danger-color);
+    border-left: 5px solid darken(var(--danger-color), 10%);
+}
+
+.message-error::before {
+    content: "❌";
+}
+
+/* Footer */
+.footer {
+    background-color: var(--footer-bg);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.footer-link {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--accent-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    .quick-stats {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-around;
+    }
+    
+    .stat-item {
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .nav-bar {
+        overflow-x: auto;
+        padding: 0.5rem 1rem;
+    }
+    
+    .appointments-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+/* Record Actions */
+.record-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Search and Filter */
+.search-container {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.search-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.filter-section {
+    margin-bottom: 1.5rem;
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.filter-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+}
+
+.filter-select, .filter-date {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus, .filter-date:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Form Styles */
+.form-inline {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+</style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1 class="header-title">MediCare Doctor Portal</h1>
+        <div class="user-info">
+            <span class="user-greeting">Welcome,</span>
+            <span class="username">Dr. ${user.username}</span>
+            <form action="${pageContext.request.contextPath}/LogoutServlet" method="post" class="form-inline">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <a href="${pageContext.request.contextPath}/DashboardServlet" 
+           class="nav-link ${activePage == 'dashboard' ? 'active' : ''}">
+            Dashboard
+        </a>
+        <a href="${pageContext.request.contextPath}/DoctorAppointmentsServlet" 
+           class="nav-link ${activePage == 'appointments' ? 'active' : ''}">
+            Appointments
+        </a>
+        <a href="${pageContext.request.contextPath}/PatientRecordsServlet" 
+           class="nav-link ${activePage == 'records' ? 'active' : ''}">
+            Patient Records
+        </a>
+        <a href="${pageContext.request.contextPath}/DoctorScheduleServlet" 
+           class="nav-link ${activePage == 'schedule' ? 'active' : ''}">
+            Schedule
+        </a>
+        <a href="${pageContext.request.contextPath}/UserSettingsServlet" 
+           class="nav-link">
+            Settings
+        </a>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Doctor Panel</h2>
+            </div>
+            
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <span>Total Records:</span>
+                    <span class="stat-value">${totalRecords}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Active Patients:</span>
+                    <span class="stat-value">${activePatients}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Today's Records:</span>
+                    <span class="stat-value">${todaysRecords}</span>
+                </div>
+            </div>
+            
+            <div style="padding: 0 1.5rem; margin-top: auto;">
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px;">
+                    <p style="font-size: 0.8rem; margin-bottom: 0.5rem; color: var(--secondary-color);">Quick Actions</p>
+                    <a href="${pageContext.request.contextPath}/view/addMedicalRecord.jsp" 
+                       class="add-record-btn" style="width: 100%; justify-content: center; display: flex;">
+                        Add New Record
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Display messages -->
+            <c:if test="${not empty message}">
+                <div class="message message-success">${message}</div>
+            </c:if>
+            <c:if test="${not empty error}">
+                <div class="message message-error">${error}</div>
+            </c:if>
+
+            <!-- Search and Filter Section -->
+            <div class="filter-section">
+                <form action="${pageContext.request.contextPath}/PatientRecordsServlet" method="get" class="search-container">
+                    <input type="text" name="search" placeholder="Search patients..." class="search-input">
+                    <button type="submit" class="search-btn">Search</button>
+                </form>
+                
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <select name="status" class="filter-select">
+                            <option value="">All Statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">From Date</label>
+                        <input type="date" name="fromDate" class="filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">To Date</label>
+                        <input type="date" name="toDate" class="filter-date">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Records Table -->
+            <div class="card records-card">
+                <div class="card-header">
+                    <h3 class="card-title">All Patient Records</h3>
+                    <a href="${pageContext.request.contextPath}/view/addMedicalRecord.jsp" 
+                       class="add-record-btn">Add New Record</a>
+                </div>
+
+                <div class="card-body">
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Record ID</th>
+                                <th>Patient Name</th>
+                                <th>Date</th>
+                                <th>Diagnosis</th>
+                                <th>Treatment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="record" items="${records}">
+                                <tr>
+                                    <td>${record.recordId}</td>
+                                    <td>${record.patientName}</td>
+                                    <td><fmt:formatDate value="${record.createdAt}" pattern="yyyy-MM-dd" /></td>
+                                    <td>${record.diagnosis}</td>
+                                    <td>${record.treatment}</td>
+                                    <td>
+                                        <div class="record-actions">
+                                            <form action="${pageContext.request.contextPath}/ViewRecordServlet" 
+                                                  method="get" class="form-inline">
+                                                <input type="hidden" name="recordId" value="${record.recordId}">
+                                                <button type="submit" class="action-btn view-btn">View</button>
+                                            </form>
+                                            <form action="${pageContext.request.contextPath}/EditRecordServlet" 
+                                                  method="get" class="form-inline">
+                                                <input type="hidden" name="recordId" value="${record.recordId}">
+                                                <button type="submit" class="action-btn edit-btn">Edit</button>
+                                            </form>
+                                            <form action="${pageContext.request.contextPath}/PrintRecordServlet" 
+                                                  method="get" class="form-inline">
+                                                <input type="hidden" name="recordId" value="${record.recordId}">
+                                                <button type="submit" class="action-btn print-btn">Print</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#" class="footer-link">Privacy Policy</a>
+            <a href="#" class="footer-link">Terms of Service</a>
+            <a href="#" class="footer-link">Support</a>
+            <a href="#" class="footer-link">Contact Us</a>
+        </div>
+        <p>© 2023 MediCare Doctor Portal. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,55 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import util.DBUtil;
+
+public class UserSettingsDao {
+    public boolean updateUsername(int userId, String newUsername) throws SQLException {
+        String sql = "UPDATE users SET username = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, newUsername);
+            statement.setInt(2, userId);
+            
+            int rowsAffected = statement.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
+    
+    public boolean updatePassword(int userId, String newPassword) throws SQLException {
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, newPassword);
+            statement.setInt(2, userId);
+            
+            int rowsAffected = statement.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
+    
+    public boolean verifyCurrentPassword(int userId, String password) throws SQLException {
+        String sql = "SELECT password FROM users WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, userId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    return storedPassword.equals(password);
+                }
+                return false;
+            }
+        }
+    }
+}

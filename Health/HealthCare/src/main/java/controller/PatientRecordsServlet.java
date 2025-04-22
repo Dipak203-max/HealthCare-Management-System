@@ -1,0 +1,50 @@
+package controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.MedicalRecordDao;
+import model.User;
+import model.MedicalRecord;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+@WebServlet("/PatientRecordsServlet")
+public class PatientRecordsServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/view/login.jsp");
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+        if (!"doctor".equals(user.getRole())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only doctors can access patient records");
+            return;
+        }
+
+        try {
+            MedicalRecordDao recordDao = new MedicalRecordDao();
+            
+            // Get the doctor's ID from the session user
+            int doctorId = user.getId();
+            
+            // Get only records associated with this doctor
+            List<MedicalRecord> records = recordDao.getMedicalRecordsByDoctorId(doctorId);
+            
+            request.setAttribute("records", records);
+            request.setAttribute("activePage", "records");
+            request.getRequestDispatcher("/view/patientRecords.jsp").forward(request, response);
+            
+        } catch (Exception e) {
+            session.setAttribute("error", "Database error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
+        }
+    }
+}

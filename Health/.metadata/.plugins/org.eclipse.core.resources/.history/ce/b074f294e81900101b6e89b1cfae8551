@@ -1,0 +1,86 @@
+package controller;
+
+import java.io.IOException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.UserSettingsDao;
+import model.User;
+
+@WebServlet("/UserSettingsServlet")
+public class UserSettingsServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/view/userSettings.jsp").forward(request, response);
+    }
+    
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        
+        if (user == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        UserSettingsDao settingsDao = new UserSettingsDao();
+        String message = null;
+        boolean success = false;
+        
+        try {
+            if ("updateUsername".equals(action)) {
+                String newUsername = request.getParameter("newUsername");
+                
+                if (newUsername != null && !newUsername.trim().isEmpty()) {
+                    success = settingsDao.updateUsername(user.getId(), newUsername);
+                    if (success) {
+                        user.setUsername(newUsername);
+                        session.setAttribute("user", user);
+                        message = "Username updated successfully!";
+                    } else {
+                        message = "Failed to update username.";
+                    }
+                } else {
+                    message = "New username cannot be empty.";
+                }
+            } 
+            else if ("updatePassword".equals(action)) {
+                String currentPassword = request.getParameter("currentPassword");
+                String newPassword = request.getParameter("newPassword");
+                String confirmPassword = request.getParameter("confirmPassword");
+                
+                if (newPassword == null || newPassword.trim().isEmpty()) {
+                    message = "New password cannot be empty.";
+                }
+                else if (!newPassword.equals(confirmPassword)) {
+                    message = "New passwords don't match.";
+                } 
+                else if (settingsDao.verifyCurrentPassword(user.getId(), currentPassword)) {
+                    success = settingsDao.updatePassword(user.getId(), newPassword);
+                    if (success) {
+                        message = "Password updated successfully!";
+                    } else {
+                        message = "Failed to update password.";
+                    }
+                } else {
+                    message = "Current password is incorrect.";
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            message = "Database error occurred: " + e.getMessage();
+        }
+        
+        request.setAttribute("message", message);
+        request.setAttribute("success", success);
+        request.getRequestDispatcher("/view/userSettings.jsp").forward(request, response);
+    }
+}

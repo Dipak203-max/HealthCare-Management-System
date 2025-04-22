@@ -1,0 +1,196 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Appointment Management</title>
+    <style>
+        /* Inherit styles from admin dashboard */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Reuse sidebar styles from admin dashboard */
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* Appointment list specific styles */
+        .appointment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .appointment-table th, .appointment-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .appointment-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .appointment-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .status-scheduled {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        .status-completed {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .status-cancelled {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        
+        .edit-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .add-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Reuse the sidebar from admin dashboard -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Healthcare Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="${pageContext.request.contextPath}/DashboardServlet" style="color: white; text-decoration: none;">
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="${pageContext.request.contextPath}/DoctorListServlet" style="color: white; text-decoration: none;">
+                        <span>Doctors</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="${pageContext.request.contextPath}/PatientListServlet" style="color: white; text-decoration: none;">
+                        <span>Patients</span>
+                    </a>
+                </div>
+                <div class="nav-item active">
+                    <span>Appointments</span>
+                </div>
+            </nav>
+        </div>
+        
+        <!-- Main content area -->
+        <div class="main-content">
+            <header class="header">
+                <h3>Appointment Management</h3>
+                <div class="user-info">
+                    <span>Welcome, <strong>${user.username}</strong> (Admin)</span>
+                    <form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
+                        <button type="submit" class="logout-btn">Logout</button>
+                    </form>
+                </div>
+            </header>
+            
+            <a href="#" class="add-btn">Schedule New Appointment</a>
+            
+            <table class="appointment-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="appointment" items="${appointments}">
+                        <tr>
+                            <td>${appointment.appointmentId}</td>
+                            <td><fmt:formatDate value="${appointment.date}" pattern="yyyy-MM-dd" /></td>
+                            <td><fmt:formatDate value="${appointment.time}" pattern="HH:mm" /></td>
+                            <td>${appointment.patientName}</td>
+                            <td>Dr. ${appointment.doctorName}</td>
+                            <td class="status-${appointment.status.toLowerCase()}">
+                                ${appointment.status}
+                            </td>
+                            <td>
+                                <c:if test="${appointment.status == 'SCHEDULED'}">
+                                    <a href="#" class="action-btn edit-btn">Edit</a>
+                                    <a href="#" class="action-btn cancel-btn">Cancel</a>
+                                </c:if>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

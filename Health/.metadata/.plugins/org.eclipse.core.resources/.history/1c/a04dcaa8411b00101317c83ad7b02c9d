@@ -1,0 +1,33 @@
+package controller;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import dao.PatientDao;
+
+@WebServlet("/DeletePatientServlet")
+public class DeletePatientServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        int patientId = Integer.parseInt(request.getParameter("id"));
+        
+        try {
+            PatientDao patientDao = new PatientDao();
+            boolean success = patientDao.deletePatient(patientId);
+            
+            if (success) {
+                request.getSession().setAttribute("message", "Patient deleted successfully");
+            } else {
+                request.getSession().setAttribute("error", "Failed to delete patient");
+            }
+            
+            response.sendRedirect(request.getContextPath() + "/PatientListServlet");
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+    }
+}

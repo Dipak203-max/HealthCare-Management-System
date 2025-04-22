@@ -1,0 +1,588 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Doctor Dashboard</title>
+<style>
+:root {
+    --primary-color: #4a6fa5;
+    --secondary-color: #3a5a8c;
+    --accent-color: #ff7e5f;
+    --light-color: #f8f9fa;
+    --dark-color: #2b3a4a;
+    --danger-color: #e74c3c;
+    --success-color: #2ecc71;
+    --purple-color: #9b59b6;
+    --warning-color: #f39c12;
+    --info-color: #3498db;
+    --text-color: #333;
+    --text-light: #777;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top Navigation */
+.top-nav {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.8rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo-icon {
+    font-size: 1.8rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: var(--transition);
+    position: relative;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-link.active {
+    background-color: var(--accent-color);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.btn-accent {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Main Content */
+.main-content {
+    padding: 2rem;
+    flex: 1;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 0.3rem;
+}
+
+.stat-label {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    transition: var(--transition);
+}
+
+.card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.card-title {
+    font-size: 1.3rem;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.card-title i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.appointments-table th, 
+.appointments-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.appointments-table th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.appointments-table tr:last-child td {
+    border-bottom: none;
+}
+
+.appointments-table tr:hover {
+    background-color: rgba(74, 111, 165, 0.05);
+}
+
+.status {
+    font-weight: 600;
+    text-transform: capitalize;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.status-scheduled {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: var(--warning-color);
+}
+
+.status-completed {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--success-color);
+}
+
+.status-cancelled {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.action-btn i {
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.complete-btn {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.cancel-btn {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.add-record-btn {
+    background-color: var(--purple-color);
+    color: white;
+}
+
+.specialization {
+    font-style: italic;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.message {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    animation: fadeIn 0.5s ease;
+}
+
+.message i {
+    font-size: 1.2rem;
+}
+
+.message-success {
+    background-color: var(--success-color);
+}
+
+.message-error {
+    background-color: var(--danger-color);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 992px) {
+    .top-nav {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .appointments-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="logo">
+                <span class="logo-icon">👨‍⚕️</span>
+                <span>Doctor Panel</span>
+            </div>
+            
+            <div class="nav-links">
+                <a href="${pageContext.request.contextPath}/DashboardServlet" 
+                   class="nav-link ${activePage == 'dashboard' ? 'active' : ''}">
+                    <span>Dashboard</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/DoctorAppointmentsServlet" 
+                   class="nav-link ${activePage == 'appointments' ? 'active' : ''}">
+                    <span>Appointments</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/PatientRecordsServlet" 
+                   class="nav-link ${activePage == 'records' ? 'active' : ''}">
+                    <span>Patient Records</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/DoctorScheduleServlet" 
+                   class="nav-link ${activePage == 'schedule' ? 'active' : ''}">
+                    <span>Schedule</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/UserSettingsServlet" 
+                   class="nav-link">
+                    <span>Settings</span>
+                </a>
+            </div>
+            
+            <div class="user-actions">
+                <div class="user-info">
+                    <div class="user-avatar">${user.username.charAt(0)}</div>
+                    <span>Dr. ${user.username}</span>
+                </div>
+                <form action="${pageContext.request.contextPath}/LogoutServlet" method="post" class="form-inline">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header">
+                <h1 class="page-title">Dashboard Overview</h1>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-value">${todaysAppointments}</div>
+                    <div class="stat-label">Today's Appointments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-value">${upcomingAppointments}</div>
+                    <div class="stat-label">Upcoming Appointments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value">${completedAppointments}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value">${totalRecords}</div>
+                    <div class="stat-label">Patient Records</div>
+                </div>
+            </div>
+
+            <!-- Display messages -->
+            <c:if test="${not empty message}">
+                <div class="message message-success">
+                    <span>✓</span>
+                    <span>${message}</span>
+                </div>
+            </c:if>
+            <c:if test="${not empty error}">
+                <div class="message message-error">
+                    <span>✗</span>
+                    <span>${error}</span>
+                </div>
+            </c:if>
+
+            <!-- Today's Appointments Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><span>📋</span> Today's Appointments</h2>
+                </div>
+
+                <div class="card-body">
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th>Specialization</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="appointment" items="${doctorAppointments}">
+                                <tr>
+                                    <td><fmt:formatDate value="${appointment.time}" pattern="hh:mm a" /></td>
+                                    <td>${appointment.patientName}</td>
+                                    <td><fmt:formatDate value="${appointment.date}" pattern="yyyy-MM-dd" /></td>
+                                    <td class="specialization">${appointment.specialization}</td>
+                                    <td>
+                                        <span class="status status-${appointment.status.toLowerCase()}">
+                                            ${appointment.status}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <c:if test="${appointment.status == 'SCHEDULED'}">
+                                            <form action="${pageContext.request.contextPath}/UpdateAppointmentStatusServlet"
+                                                method="post" class="form-inline">
+                                                <input type="hidden" name="appointmentId"
+                                                    value="${appointment.appointmentId}">
+                                                <input type="hidden" name="status" value="COMPLETED">
+                                                <button type="submit" class="action-btn complete-btn">
+                                                    <span>✓</span> Complete
+                                                </button>
+                                            </form>
+                                            <form action="${pageContext.request.contextPath}/UpdateAppointmentStatusServlet"
+                                                method="post" class="form-inline">
+                                                <input type="hidden" name="appointmentId"
+                                                    value="${appointment.appointmentId}">
+                                                <input type="hidden" name="status" value="CANCELLED">
+                                                <button type="submit" class="action-btn cancel-btn">
+                                                    <span>✗</span> Cancel
+                                                </button>
+                                            </form>
+                                        </c:if>
+                                        <form action="${pageContext.request.contextPath}/view/addMedicalRecord.jsp"
+                                            method="get" class="form-inline">
+                                            <input type="hidden" name="appointmentId"
+                                                value="${appointment.appointmentId}">
+                                            <input type="hidden" name="patientId"
+                                                value="${appointment.patientId}">
+                                            <button type="submit" class="action-btn add-record-btn">
+                                                <span>📝</span> Add Record
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

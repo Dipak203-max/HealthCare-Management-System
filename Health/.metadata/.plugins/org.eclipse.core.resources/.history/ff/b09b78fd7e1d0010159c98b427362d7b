@@ -1,0 +1,103 @@
+package controller;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import dao.UserDao;
+import model.PasswordResetDTO;
+import model.User;
+
+@WebServlet("/AdminUserManagementServlet")
+public class AdminUserManagementServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    private UserDao userDao;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        userDao = new UserDao();
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
+
+        if (currentUser == null || !currentUser.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/view/login.jsp");
+            return;
+        }
+
+        try {
+            List<PasswordResetDTO> users = userDao.getAllUsersForPasswordReset();
+            request.setAttribute("users", users);
+            request.getRequestDispatcher("/view/admin/userManagement.jsp").forward(request, response);
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", "Database error: " + e.getMessage());
+            request.getRequestDispatcher("/view/admin/dashboard.jsp").forward(request, response);
+            e.printStackTrace();
+        }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
+
+        if (currentUser == null || !currentUser.isAdmin()) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only administrators can perform this action");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        String errorMessage = null;
+        String successMessage = null;
+
+        try {
+            if ("resetPassword".equals(action)) {
+                int userId = Integer.parseInt(request.getParameter("userId"));
+                String newPassword = request.getParameter("newPassword");
+                String confirmPassword = request.getParameter("confirmPassword");
+
+                if (newPassword == null || newPassword.trim().isEmpty()) {
+                    errorMessage = "New password cannot be empty";
+                } else if (!newPassword.equals(confirmPassword)) {
+                    errorMessage = "Passwords do not match";
+                } else if (newPassword.length() < 8) {
+                    errorMessage = "Password must be at least 8 characters";
+                } else {
+                    boolean success = userDao.resetUserPassword(userId, newPassword);
+                    if (success) {
+                        successMessage = "Password reset successfully";
+                    } else {
+                        errorMessage = "Failed to reset password";
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            errorMessage = "Invalid user ID";
+        } catch (SQLException e) {
+            errorMessage = "Database error: " + e.getMessage();
+            e.printStackTrace();
+        }
+
+        if (errorMessage != null) {
+            request.setAttribute("errorMessage", errorMessage);
+        }
+        if (successMessage != null) {
+            request.setAttribute("successMessage", successMessage);
+        }
+
+        doGet(request, response);
+    }
+}

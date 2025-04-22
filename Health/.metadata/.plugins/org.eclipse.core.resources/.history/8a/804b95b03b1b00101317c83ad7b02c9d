@@ -1,0 +1,115 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Doctor Registration</h5>
+    </div>
+    <div class="card-body">
+        <form id="doctorRegistrationForm" action="${pageContext.request.contextPath}/AddDoctorServlet" method="post" 
+              class="needs-validation" novalidate>
+            
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="firstName">First Name</label>
+                    <input type="text" class="form-control" id="firstName" name="firstName" required>
+                    <div class="invalid-feedback">Please provide first name</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" name="lastName" required>
+                    <div class="invalid-feedback">Please provide last name</div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="specialization">Specialization</label>
+                <select class="custom-select" id="specialization" name="specialization" required>
+                    <option value="" selected disabled>Select specialization</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Neurology">Neurology</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="General Practice">General Practice</option>
+                    <option value="Other">Other (specify below)</option>
+                </select>
+                <div class="invalid-feedback">Please select a specialization</div>
+            </div>
+            
+            <div class="form-group mb-3" id="otherSpecializationGroup" style="display: none;">
+                <label for="otherSpecialization">Specify Specialization</label>
+                <input type="text" class="form-control" id="otherSpecialization" name="otherSpecialization">
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="email">Email (Username)</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+                <div class="invalid-feedback">Please provide a valid email</div>
+                <small class="form-text text-muted">This will be used for login</small>
+            </div>
+            
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}">
+                    <div class="invalid-feedback">
+                        Password must contain at least 8 characters, including uppercase, lowercase and numbers
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                    <div class="invalid-feedback">Passwords must match</div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                    <label class="form-check-label" for="agreeTerms">
+                        I confirm that all information provided is accurate
+                    </label>
+                    <div class="invalid-feedback">You must agree before submitting</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" type="submit">Register Doctor</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Specialization "Other" field toggle
+document.getElementById('specialization').addEventListener('change', function() {
+    const otherGroup = document.getElementById('otherSpecializationGroup');
+    otherGroup.style.display = this.value === 'Other' ? 'block' : 'none';
+    if (this.value !== 'Other') {
+        document.getElementById('otherSpecialization').value = '';
+    }
+});
+
+// Password confirmation validation
+document.getElementById('confirmPassword').addEventListener('input', function() {
+    const password = document.getElementById('password');
+    if (this.value !== password.value) {
+        this.setCustomValidity("Passwords don't match");
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        const form = document.getElementById('doctorRegistrationForm');
+        form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    }, false);
+})();
+</script>

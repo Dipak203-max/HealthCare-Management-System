@@ -1,0 +1,732 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Patient Dashboard</title>
+<style>
+:root {
+    --primary-color: #8B4513;  /* SaddleBrown */
+    --secondary-color: #A0522D;  /* Sienna */
+    --accent-color: #D2691E;  /* Chocolate */
+    --light-color: #F5F5DC;  /* Beige */
+    --dark-color: #2C1E1E;  /* Dark Brown */
+    --text-color: #333;
+    --danger-color: #B22222;  /* FireBrick */
+    --success-color: #228B22;  /* ForestGreen */
+    --info-color: #4682B4;  /* SteelBlue */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--light-color);
+    color: var(--text-color);
+}
+
+/* Top Navigation Bar */
+.top-nav {
+    background: linear-gradient(to right, var(--dark-color), var(--primary-color));
+    color: white;
+    padding: 0 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 15px 0;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: block;
+    padding: 20px 15px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background-color: var(--accent-color);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--light-color);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.logout-btn:hover {
+    background-color: #8B0000;  /* DarkRed */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Content */
+.main-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-banner h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.welcome-banner p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* Cards */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-top: 4px solid var(--accent-color);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 10px 0;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Appointments Section */
+.appointments-section {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--light-color);
+}
+
+.appointment-card {
+    background-color: #FFF9F0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--accent-color);
+    transition: transform 0.3s ease;
+}
+
+.appointment-card:hover {
+    transform: translateX(5px);
+}
+
+.appointment-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.status-pending {
+    color: #FF8C00;  /* DarkOrange */
+    font-weight: 500;
+}
+
+.status-confirmed {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+/* Messages */
+.message {
+    padding: 15px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message-success {
+    background-color: var(--success-color);
+}
+
+.message-error {
+    background-color: var(--danger-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        padding: 10px 0;
+    }
+    
+    .nav-menu {
+        width: 100%;
+        justify-content: space-around;
+        margin-top: 10px;
+    }
+    
+    .nav-link {
+        padding: 15px 10px;
+    }
+    
+    .card-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-info {
+        margin-top: 15px;
+    }
+    
+    footer {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 40px 5%;
+    text-align: center;
+}
+
+	/* Footer Styles */
+footer {
+    background: linear-gradient(to right, var(--dark-color), var(--primary-color));
+    color: white;
+    padding: 60px 5% 30px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.footer-logo img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.footer-logo span {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+}
+
+.footer-newsletter h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--light-color);
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 10px;
+}
+
+.newsletter-form input {
+    padding: 12px 15px;
+    border: none;
+    border-radius: 30px;
+    width: 250px;
+    font-size: 14px;
+}
+
+.subscribe-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.subscribe-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.footer-middle {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    padding: 40px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.footer-column h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: var(--light-color);
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-column h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 2px;
+    background-color: var(--accent-color);
+}
+
+.footer-links {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-links a:hover {
+    color: white;
+    transform: translateX(5px);
+}
+
+.contact-info {
+    list-style: none;
+}
+
+.contact-info li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: rgba(255,255,255,0.8);
+}
+
+.contact-info i {
+    color: var(--accent-color);
+    margin-top: 3px;
+}
+
+.footer-bottom {
+    padding-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 20px;
+}
+
+.social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.social-icons a:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-3px);
+}
+
+.footer-legal {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-legal a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.footer-legal a:hover {
+    color: var(--accent-color);
+}
+
+.copyright {
+    margin-top: 10px;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Responsive Footer */
+@media (max-width: 768px) {
+    .footer-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .newsletter-form {
+        width: 100%;
+    }
+    
+    .newsletter-form input {
+        width: 100%;
+    }
+    
+    .footer-middle {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .footer-legal {
+        justify-content: flex-start;
+    }
+}
+        
+}
+</style>
+</head>
+<body>
+<!-- Top Navigation Bar -->
+<nav class="top-nav">
+    <div class="nav-container">
+        <div class="brand">Patient Portal</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="${pageContext.request.contextPath}/PatientDashboardServlet" 
+                   class="nav-link ${activePage == 'dashboard' ? 'active' : ''}">
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="${pageContext.request.contextPath}/PatientAppointmentsServlet" 
+                   class="nav-link ${activePage == 'appointments' ? 'active' : ''}">
+                    <span>My Appointments</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="${pageContext.request.contextPath}/ScheduleAppointmentServlet" 
+                   class="nav-link ${activePage == 'make-appointment' ? 'active' : ''}">
+                    <span>Make Appointment</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="${pageContext.request.contextPath}/PatientMedicalRecordsServlet" 
+                   class="nav-link ${activePage == 'records' ? 'active' : ''}">
+                    <span>Medical Records</span>
+                </a>
+            </li>
+        </ul>
+        <div class="user-info">
+            <span>Welcome, <strong>${user.username}</strong></span>
+            <form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-container">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <h2>Welcome back, ${user.username}!</h2>
+        <p>Here's what's happening with your health today</p>
+    </div>
+
+    <!-- Display messages -->
+    <c:if test="${not empty message}">
+        <div class="message message-success">${message}</div>
+    </c:if>
+    <c:if test="${not empty error}">
+        <div class="message message-error">${error}</div>
+    </c:if>
+
+    <!-- Quick Access Cards -->
+    <div class="card-container">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Make Appointment</span>
+            </div>
+            <p>Schedule a new appointment with a doctor</p>
+            <a href="${pageContext.request.contextPath}/ScheduleAppointmentServlet" 
+               class="btn btn-primary" style="margin-top: 15px;">
+                Book Now
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Medical Records</span>
+            </div>
+            <p>View your complete medical history</p>
+            <a href="${pageContext.request.contextPath}/PatientMedicalRecordsServlet" 
+               class="btn btn-primary" style="margin-top: 15px;">
+                View Records
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Prescriptions</span>
+                <span class="card-value">${prescriptionsCount}</span>
+            </div>
+            <p>Access your current medications</p>
+            <a href="#" class="btn btn-primary" style="margin-top: 15px;">
+                View Prescriptions
+            </a>
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <div class="appointments-section">
+        <h3 class="section-title">Upcoming Appointments</h3>
+        <div class="card-header">
+            <span class="card-title">Total Appointments</span>
+            <span class="card-value">${upcomingAppointmentsCount}</span>
+        </div>
+        
+        <c:forEach var="appointment" items="${upcomingAppointments}">
+            <div class="appointment-card">
+                <div class="appointment-info">
+                    <strong>Dr. ${appointment.doctorName}</strong>
+                    <span class="status-confirmed">${appointment.status}</span>
+                </div>
+                <div>${appointment.specialization}</div>
+                <div>
+                    <fmt:formatDate value="${appointment.date}" pattern="EEE, MMM d" />, 
+                    <fmt:formatDate value="${appointment.time}" pattern="h:mm a" />
+                </div>
+            </div>
+        </c:forEach>
+        
+        <c:if test="${empty upcomingAppointments}">
+            <div style="padding: 20px; text-align: center; background-color: var(--light-color); border-radius: 8px;">
+                No upcoming appointments found. Would you like to <a href="${pageContext.request.contextPath}/ScheduleAppointmentServlet" style="color: var(--accent-color);">schedule one</a>?
+            </div>
+        </c:if>
+    </div>
+</div>
+<footer>
+    <div class="footer-content">
+        <div class="footer-top">
+            <div class="footer-logo">
+                <img src="images/a.avif" alt="Logo">
+                <span>HealthCare</span>
+            </div>
+            
+            <div class="footer-newsletter">
+                <h3>Stay Updated</h3>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Your email address">
+                    <button type="submit" class="subscribe-btn">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="footer-middle">
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Doctors</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Services</h3>
+                <ul class="footer-links">
+                    <li><a href="#">General Checkup</a></li>
+                    <li><a href="#">Dental Care</a></li>
+                    <li><a href="#">Cardiology</a></li>
+                    <li><a href="#">Neurology</a></li>
+                    <li><a href="#">Emergency Care</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Medical Drive, Health City</li>
+                    <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                    <li><i class="fas fa-envelope"></i> info@healthcare.com</li>
+                    <li><i class="fas fa-clock"></i> Mon-Fri: 8AM - 6PM</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+            
+            <p class="copyright">&copy; 2023 HealthCare Appointment System. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

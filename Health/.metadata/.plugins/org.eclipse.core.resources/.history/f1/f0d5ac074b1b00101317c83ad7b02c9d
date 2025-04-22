@@ -1,0 +1,97 @@
+package controller;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.UserSettingsDao;
+import model.User;
+
+@WebServlet("/UserSettingsServlet")
+public class UserSettingsServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        
+        if (user == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        
+        try {
+            UserSettingsDao settingsDao = new UserSettingsDao();
+            User currentUser = settingsDao.getUserDetails(user.getId());
+            
+            request.setAttribute("currentUser", currentUser);
+            request.getRequestDispatcher("/view/userSettings.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+    }
+    
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        
+        if (user == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        UserSettingsDao settingsDao = new UserSettingsDao();
+        String message = null;
+        boolean success = false;
+        
+        try {
+            if ("updateProfile".equals(action)) {
+                String newUsername = request.getParameter("username").trim();
+                String newRole = request.getParameter("role");
+                
+                User updatedUser = new User();
+                updatedUser.setId(user.getId());
+                updatedUser.setUsername(newUsername);
+                updatedUser.setRole(newRole);
+                
+                success = settingsDao.updateUserDetails(updatedUser);
+                if (success) {
+                    // Update session with new user details
+                    session.setAttribute("user", updatedUser);
+                    message = "Profile updated successfully!";
+                } else {
+                    message = "Failed to update profile";
+                }
+            } 
+            else if ("updatePassword".equals(action)) {
+                String currentPassword = request.getParameter("currentPassword");
+                String newPassword = request.getParameter("newPassword");
+                String confirmPassword = request.getParameter("confirmPassword");
+                
+                if (newPassword == null || newPassword.trim().isEmpty()) {
+                    message = "New password cannot be empty";
+                } else if (!newPassword.equals(confirmPassword)) {
+                    message = "New passwords don't match";
+                } else if (settingsDao.verifyCurrentPassword(user.getId(), currentPassword)) {
+                    success = settingsDao.updatePassword(user.getId(), newPassword);
+                    message = success ? "Password updated successfully!" : "Failed to update password";
+                } else {
+                    message = "Current password is incorrect";
+                }
+            }
+        } catch (SQLException e) {
+            message = "Database error: " + e.getMessage();
+        }
+        
+        request.setAttribute("message", message);
+        request.setAttribute("success", success);
+        doGet(request, response); // Reload the page with updated data
+    }
+}

@@ -1,0 +1,96 @@
+package controller;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.UserSettingsDao;
+import model.User;
+
+@WebServlet("/UserSettingsServlet")
+public class UserSettingsServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        
+        try {
+            UserSettingsDao settingsDao = new UserSettingsDao();
+            User userDetails = settingsDao.getUserDetails(currentUser.getId());
+            request.setAttribute("currentUser", userDetails);
+            
+            if ("admin".equals(currentUser.getRole())) {
+                List<User> allUsers = settingsDao.getAllNonAdminUsers();
+                request.setAttribute("allUsers", allUsers);
+            }
+            
+            request.getRequestDispatcher("/view/userSettings.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+    }
+    
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        UserSettingsDao settingsDao = new UserSettingsDao();
+        String message = null;
+        boolean success = false;
+        
+        try {
+            if ("updatePassword".equals(action)) {
+                // For all users changing their own password
+                String currentPassword = request.getParameter("currentPassword");
+                String newPassword = request.getParameter("newPassword");
+                String confirmPassword = request.getParameter("confirmPassword");
+                
+                if (newPassword == null || newPassword.trim().isEmpty()) {
+                    message = "New password cannot be empty";
+                } else if (!newPassword.equals(confirmPassword)) {
+                    message = "New passwords don't match";
+                } else if (settingsDao.verifyCurrentPassword(currentUser.getId(), currentPassword)) {
+                    success = settingsDao.updatePassword(currentUser.getId(), newPassword);
+                    message = success ? "Password updated successfully!" : "Failed to update password";
+                } else {
+                    message = "Current password is incorrect";
+                }
+            } 
+            else if ("resetUserPassword".equals(action) && "admin".equals(currentUser.getRole())) {
+                // Admin resetting another user's password
+                int userId = Integer.parseInt(request.getParameter("userId"));
+                String newPassword = request.getParameter("newPassword");
+                
+                success = settingsDao.resetUserPassword(userId, newPassword);
+                message = success ? "Password reset successfully!" : "Failed to reset password";
+            }
+        } catch (SQLException e) {
+            message = "Database error: " + e.getMessage();
+        } catch (NumberFormatException e) {
+            message = "Invalid user ID";
+        }
+        
+        request.setAttribute("message", message);
+        request.setAttribute("success", success);
+        doGet(request, response); // Reload the page with updated data
+    }
+}

@@ -1,0 +1,50 @@
+package controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.AppointmentDao;
+import model.Appointment;
+import model.User;
+import java.io.IOException;
+import java.sql.SQLException;
+
+@WebServlet("/ManageAppointmentServlet")
+public class ManageAppointmentServlet extends HttpServlet {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+	        throws ServletException, IOException {
+	    HttpSession session = request.getSession(false);
+	    User user = (User) session.getAttribute("user");
+	    
+	    try {
+	        int appointmentId = Integer.parseInt(request.getParameter("appointmentId"));
+	        String action = request.getParameter("action");
+	        
+	        AppointmentDao appointmentDao = new AppointmentDao();
+	        Appointment appointment = appointmentDao.getAppointmentById(appointmentId);
+	        
+	        // Verify the doctor owns this appointment
+	        if (appointment.getDoctorId() != user.getId()) {
+	            session.setAttribute("error", "You can only manage your own appointments");
+	            response.sendRedirect(request.getContextPath() + "/DoctorAppointmentsServlet");
+	            return;
+	        }
+	        
+	        String status = "scheduled".equals(action) ? "scheduled" : "rejected";
+	        boolean success = appointmentDao.updateAppointmentStatus(appointmentId, status);
+	        
+	        if (success) {
+	            session.setAttribute("message", "Appointment has been " + status);
+	        } else {
+	            session.setAttribute("error", "Failed to update appointment status");
+	        }
+	    } catch (Exception e) {
+	        session.setAttribute("error", "Error: " + e.getMessage());
+	    }
+	    
+	    response.sendRedirect(request.getContextPath() + "/DoctorAppointmentsServlet");
+	}
+}

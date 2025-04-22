@@ -1,0 +1,8 @@
+INDEX VERSION 1.4+/Users/dipaktolangi/Desktop/Coursework 2/Health/.metadata/.plugins/org.eclipse.wst.jsdt.core/indexes
+2098959284.index
+923163015.index
+2307530571.index
+2046880148.index
+1824089290.index
+3469297607.index
+751054699.index

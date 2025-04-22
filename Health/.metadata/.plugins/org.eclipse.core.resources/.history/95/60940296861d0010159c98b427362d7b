@@ -1,0 +1,130 @@
+package dao;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import model.MedicalRecord;
+import util.DBUtil;
+
+public class MedicalRecordDao {
+    public List<MedicalRecord> getAllMedicalRecords() {
+        List<MedicalRecord> records = new ArrayList<>();
+        String sql = "SELECT mr.record_id, mr.patient_id, mr.doctor_id, " +
+                     "mr.diagnosis, mr.treatment, mr.created_at, " +
+                     "p.name AS patient_name, d.name AS doctor_name " +
+                     "FROM medical_records mr " +
+                     "JOIN patients p ON mr.patient_id = p.patient_id " +
+                     "JOIN doctors d ON mr.doctor_id = d.doctor_id " +
+                     "ORDER BY mr.created_at DESC";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            while (resultSet.next()) {
+                MedicalRecord record = new MedicalRecord();
+                record.setRecordId(resultSet.getInt("record_id"));
+                record.setPatientId(resultSet.getInt("patient_id"));
+                record.setDoctorId(resultSet.getInt("doctor_id"));
+                record.setDiagnosis(resultSet.getString("diagnosis"));
+                record.setTreatment(resultSet.getString("treatment"));
+                record.setCreatedAt(resultSet.getTimestamp("created_at"));
+                record.setPatientName(resultSet.getString("patient_name"));
+                record.setDoctorName(resultSet.getString("doctor_name"));
+                
+                records.add(record);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return records;
+    }
+
+    public boolean addMedicalRecord(int patientId, int doctorId, String diagnosis, String treatment) throws SQLException {
+        String sql = "INSERT INTO medical_records (patient_id, doctor_id, diagnosis, treatment) " +
+                     "VALUES (?, ?, ?, ?)";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, patientId);
+            statement.setInt(2, doctorId);
+            statement.setString(3, diagnosis);
+            statement.setString(4, treatment);
+            
+            int rowsAffected = statement.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
+    
+    public MedicalRecord getMedicalRecordById(int recordId) throws SQLException {
+        String sql = "SELECT mr.record_id, mr.patient_id, mr.doctor_id, mr.diagnosis, " +
+                     "mr.treatment, mr.created_at, p.name AS patient_name, d.name AS doctor_name " +
+                     "FROM medical_records mr " +
+                     "JOIN patients p ON mr.patient_id = p.patient_id " +
+                     "JOIN doctors d ON mr.doctor_id = d.doctor_id " +
+                     "WHERE mr.record_id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, recordId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    MedicalRecord record = new MedicalRecord();
+                    record.setRecordId(resultSet.getInt("record_id"));
+                    record.setPatientId(resultSet.getInt("patient_id"));
+                    record.setDoctorId(resultSet.getInt("doctor_id"));
+                    record.setDiagnosis(resultSet.getString("diagnosis"));
+                    record.setTreatment(resultSet.getString("treatment"));
+                    record.setCreatedAt(resultSet.getTimestamp("created_at"));
+                    record.setPatientName(resultSet.getString("patient_name"));
+                    record.setDoctorName(resultSet.getString("doctor_name"));
+                    return record;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean updateMedicalRecord(int recordId, String diagnosis, String treatment) throws SQLException {
+        String sql = "UPDATE medical_records SET diagnosis = ?, treatment = ? WHERE record_id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, diagnosis);
+            statement.setString(2, treatment);
+            statement.setInt(3, recordId);
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public List<MedicalRecord> getMedicalRecordsByDoctorId(int doctorId) throws SQLException {
+        List<MedicalRecord> records = new ArrayList<>();
+        String sql = "SELECT mr.record_id, p.name as patient_name, mr.diagnosis, mr.treatment, mr.created_at " +
+                     "FROM medical_records mr " +
+                     "JOIN patients p ON mr.patient_id = p.patient_id " +
+                     "WHERE mr.doctor_id = ? " +
+                     "ORDER BY mr.created_at DESC";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, doctorId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    MedicalRecord record = new MedicalRecord();
+                    record.setRecordId(resultSet.getInt("record_id"));
+                    record.setPatientName(resultSet.getString("patient_name"));
+                    record.setDiagnosis(resultSet.getString("diagnosis"));
+                    record.setTreatment(resultSet.getString("treatment"));
+                    record.setCreatedAt(resultSet.getTimestamp("created_at"));
+                    records.add(record);
+                }
+            }
+        }
+        return records;
+    }
+}

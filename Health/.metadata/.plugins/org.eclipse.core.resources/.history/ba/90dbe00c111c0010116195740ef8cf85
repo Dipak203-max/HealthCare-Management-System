@@ -1,0 +1,79 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HealthCare System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+        }
+
+        .navbar {
+            background-color: #2ecc71;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar .login-link {
+            text-decoration: none;
+            background-color: white;
+            color: #2ecc71;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        .navbar .login-link:hover {
+            background-color: #ecf0f1;
+        }
+
+        .content {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .content h1 {
+            font-size: 36px;
+            color: #2c3e50;
+        }
+
+        .content p {
+            font-size: 18px;
+            color: #555;
+            max-width: 600px;
+            margin: 20px auto 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">HealthCare</div>
+        <!-- Link to login.jsp inside view folder -->
+        <a href="${pageContext.request.contextPath}/view/login.jsp" class="login-link">Login</a>
+    </div>
+
+    <div class="content">
+        <h1>Welcome to HealthCare System</h1>
+        <p>Your trusted partner in delivering quality and accessible healthcare services for all.</p>
+    </div>
+
+</body>
+</html>

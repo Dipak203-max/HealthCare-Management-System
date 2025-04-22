@@ -1,0 +1,27 @@
+package controller;
+
+import java.io.IOException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/GenerateReportServlet")
+public class GenerateReportServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        int recordId = Integer.parseInt(request.getParameter("recordId"));
+        
+        // In a real application, you would:
+        // 1. Fetch the medical record from database
+        // 2. Generate a PDF/Word report
+        // 3. Send the file to the user
+        
+        // For this example, we'll just redirect back
+        response.sendRedirect(request.getContextPath() + "/MedicalRecordListServlet");
+    }
+}

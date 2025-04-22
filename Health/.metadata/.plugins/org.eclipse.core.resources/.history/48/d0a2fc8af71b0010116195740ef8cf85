@@ -1,0 +1,307 @@
+package dao;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import model.Appointment;
+import util.DBUtil;
+
+public class AppointmentDao {
+	public List<Appointment> getAllAppointments() {
+	    List<Appointment> appointments = new ArrayList<>();
+	    
+	    // Add debug output
+	    System.out.println("DEBUG: Preparing to fetch appointments...");
+	    
+	    String sql = "SELECT a.appointment_id, a.patient_id, a.doctor_id, " +
+	                 "a.date, a.time, a.status, " +
+	                 "p.name AS patient_name, d.name AS doctor_name " +
+	                 "FROM appointments a " +
+	                 "JOIN patients p ON a.patient_id = p.patient_id " +
+	                 "JOIN doctors d ON a.doctor_id = d.doctor_id " +
+	                 "ORDER BY a.date DESC, a.time DESC";
+	    
+	    System.out.println("DEBUG: Executing query:\n" + sql);
+	    
+	    try (Connection connection = DBUtil.getConnection();
+	         PreparedStatement statement = connection.prepareStatement(sql);
+	         ResultSet resultSet = statement.executeQuery()) {
+	        
+	        System.out.println("DEBUG: Query executed, processing results...");
+	        
+	        while (resultSet.next()) {
+	            Appointment appointment = new Appointment();
+	            appointment.setAppointmentId(resultSet.getInt("appointment_id"));
+	            appointment.setPatientId(resultSet.getInt("patient_id"));
+	            appointment.setDoctorId(resultSet.getInt("doctor_id"));
+	            appointment.setDate(resultSet.getDate("date"));
+	            appointment.setTime(resultSet.getTime("time"));
+	            appointment.setStatus(resultSet.getString("status"));
+	            appointment.setPatientName(resultSet.getString("patient_name"));
+	            appointment.setDoctorName(resultSet.getString("doctor_name"));
+	            
+	            // Debug output for each appointment
+	            System.out.println("DEBUG: Found appointment - ID: " + appointment.getAppointmentId() + 
+	                             ", Patient: " + appointment.getPatientName() + 
+	                             ", Doctor: " + appointment.getDoctorName());
+	            
+	            appointments.add(appointment);
+	        }
+	        
+	        System.out.println("DEBUG: Total appointments found: " + appointments.size());
+	        
+	    } catch (SQLException e) {
+	        System.err.println("ERROR in getAllAppointments: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return appointments;
+	}
+	
+	
+	public boolean addAppointment(Appointment appointment) throws SQLException {
+        String sql = "INSERT INTO appointments (patient_id, doctor_id, date, time, status) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, appointment.getPatientId());
+            statement.setInt(2, appointment.getDoctorId());
+            statement.setDate(3, appointment.getDate());
+            statement.setTime(4, appointment.getTime());
+            statement.setString(5, appointment.getStatus());
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean updateAppointment(Appointment appointment) throws SQLException {
+        String sql = "UPDATE appointments SET patient_id = ?, doctor_id = ?, date = ?, " +
+                     "time = ?, status = ? WHERE appointment_id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, appointment.getPatientId());
+            statement.setInt(2, appointment.getDoctorId());
+            statement.setDate(3, appointment.getDate());
+            statement.setTime(4, appointment.getTime());
+            statement.setString(5, appointment.getStatus());
+            statement.setInt(6, appointment.getAppointmentId());
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean deleteAppointment(int appointmentId) throws SQLException {
+        String sql = "DELETE FROM appointments WHERE appointment_id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, appointmentId);
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public Appointment getAppointmentById(int appointmentId) throws SQLException {
+        String sql = "SELECT * FROM appointments WHERE appointment_id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, appointmentId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    Appointment appointment = new Appointment();
+                    appointment.setAppointmentId(resultSet.getInt("appointment_id"));
+                    appointment.setPatientId(resultSet.getInt("patient_id"));
+                    appointment.setDoctorId(resultSet.getInt("doctor_id"));
+                    appointment.setDate(resultSet.getDate("date"));
+                    appointment.setTime(resultSet.getTime("time"));
+                    appointment.setStatus(resultSet.getString("status"));
+                    return appointment;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public int getTodayAppointmentsCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE date = CURDATE()";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+            return 0;
+        }
+    }
+    
+    public int getPendingRequestsCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE status = 'scheduled'";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+            return 0;
+        }
+    }
+    
+ 
+
+    public int getUpcomingPatientAppointmentsCount(int patientId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE patient_id = ? AND date >= CURDATE()";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, patientId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+    
+    
+ 
+
+    public int getTodaysDoctorAppointmentsCount(int doctorId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND date = CURDATE()";
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, doctorId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+    
+    
+ // In AppointmentDao.java
+    public boolean updateAppointmentStatus(int appointmentId, String status) throws SQLException {
+        String sql = "UPDATE appointments SET status = ? WHERE appointment_id = ?";
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, status);
+            statement.setInt(2, appointmentId);
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    
+    public List<Appointment> getDoctorAppointments(int doctorId) throws SQLException {
+        List<Appointment> appointments = new ArrayList<>();
+        String sql = "SELECT a.appointment_id, a.patient_id, a.doctor_id, a.date, a.time, a.status, " +
+                     "p.name AS patient_name, d.name AS doctor_name, d.specialization " +
+                     "FROM appointments a " +
+                     "JOIN patients p ON a.patient_id = p.patient_id " +
+                     "JOIN doctors d ON a.doctor_id = d.doctor_id " +
+                     "WHERE a.doctor_id = ? " +
+                     "ORDER BY a.date DESC, a.time DESC";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, doctorId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Appointment appointment = new Appointment();
+                    appointment.setAppointmentId(resultSet.getInt("appointment_id"));
+                    appointment.setPatientId(resultSet.getInt("patient_id"));
+                    appointment.setDoctorId(resultSet.getInt("doctor_id"));
+                    appointment.setDate(resultSet.getDate("date"));
+                    appointment.setTime(resultSet.getTime("time"));
+                    appointment.setStatus(resultSet.getString("status"));
+                    appointment.setPatientName(resultSet.getString("patient_name"));
+                    appointment.setDoctorName(resultSet.getString("doctor_name"));
+                    appointment.setSpecialization(resultSet.getString("specialization"));
+                    appointments.add(appointment);
+                }
+            }
+        }
+        return appointments;
+    }
+    
+    public List<Appointment> getDoctorAppointmentsWithDetails(int doctorId) throws SQLException {
+        List<Appointment> appointments = new ArrayList<>();
+        String sql = "SELECT a.appointment_id, a.patient_id, a.doctor_id, a.date, a.time, a.status, " +
+                     "p.name AS patient_name, p.phone AS patient_phone, " +
+                     "d.name AS doctor_name, d.specialization " +
+                     "FROM appointments a " +
+                     "JOIN patients p ON a.patient_id = p.patient_id " +
+                     "JOIN doctors d ON a.doctor_id = d.doctor_id " +
+                     "WHERE a.doctor_id = ? " +
+                     "ORDER BY a.date DESC, a.time DESC";
+
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, doctorId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Appointment appointment = new Appointment();
+                    appointment.setAppointmentId(resultSet.getInt("appointment_id"));
+                    appointment.setPatientId(resultSet.getInt("patient_id"));
+                    appointment.setDoctorId(resultSet.getInt("doctor_id"));
+                    appointment.setDate(resultSet.getDate("date"));
+                    appointment.setTime(resultSet.getTime("time"));
+                    appointment.setStatus(resultSet.getString("status"));
+                    appointment.setPatientName(resultSet.getString("patient_name"));
+                    appointment.setPatientPhone(resultSet.getString("patient_phone"));
+                    appointment.setDoctorName(resultSet.getString("doctor_name"));
+                    appointment.setSpecialization(resultSet.getString("specialization"));
+                    appointments.add(appointment);
+                }
+            }
+        }
+        return appointments;
+    }
+    
+ // Add this method to your existing AppointmentDao class
+    public List<Appointment> getDoctorSchedule(int doctorId) throws SQLException {
+        String sql = "SELECT a.appointment_id, a.patient_id, a.doctor_id, a.date, a.time, a.status, " +
+                     "p.name AS patient_name, d.name AS doctor_name, d.specialization " +
+                     "FROM appointments a " +
+                     "JOIN patients p ON a.patient_id = p.patient_id " +
+                     "JOIN doctors d ON a.doctor_id = d.doctor_id " +
+                     "WHERE a.doctor_id = ? AND a.date >= CURDATE() " +
+                     "ORDER BY a.date ASC, a.time ASC";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, doctorId);
+            
+            List<Appointment> schedule = new ArrayList<>();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Appointment appointment = new Appointment();
+                    appointment.setAppointmentId(resultSet.getInt("appointment_id"));
+                    appointment.setPatientId(resultSet.getInt("patient_id"));
+                    appointment.setDoctorId(resultSet.getInt("doctor_id"));
+                    appointment.setDate(resultSet.getDate("date"));
+                    appointment.setTime(resultSet.getTime("time"));
+                    appointment.setStatus(resultSet.getString("status"));
+                    appointment.setPatientName(resultSet.getString("patient_name"));
+                    appointment.setDoctorName(resultSet.getString("doctor_name"));
+                    appointment.setSpecialization(resultSet.getString("specialization"));
+                    schedule.add(appointment);
+                }
+            }
+            return schedule;
+        }
+    }
+
+}

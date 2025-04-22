@@ -1,0 +1,44 @@
+package dao;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import model.Appointment;
+import util.DBUtil;
+
+public class AppointmentDao {
+    public List<Appointment> getAllAppointments() {
+        List<Appointment> appointments = new ArrayList<>();
+        String sql = "SELECT a.appointment_id, a.patient_id, a.doctor_id, " +
+                     "a.date, a.time, a.status, " +
+                     "p.name AS patient_name, d.name AS doctor_name " +
+                     "FROM appointments a " +
+                     "JOIN patients p ON a.patient_id = p.patient_id " +
+                     "JOIN doctors d ON a.doctor_id = d.doctor_id " +
+                     "ORDER BY a.date DESC, a.time DESC";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            while (resultSet.next()) {
+                Appointment appointment = new Appointment();
+                appointment.setAppointmentId(resultSet.getInt("appointment_id"));
+                appointment.setPatientId(resultSet.getInt("patient_id"));
+                appointment.setDoctorId(resultSet.getInt("doctor_id"));
+                appointment.setDate(resultSet.getDate("date"));
+                appointment.setTime(resultSet.getTime("time"));
+                appointment.setStatus(resultSet.getString("status"));
+                
+                // Store additional info for display
+                appointment.setPatientName(resultSet.getString("patient_name"));
+                appointment.setDoctorName(resultSet.getString("doctor_name"));
+                
+                appointments.add(appointment);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return appointments;
+    }
+}

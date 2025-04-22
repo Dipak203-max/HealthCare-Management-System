@@ -1,0 +1,261 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-nav {
+            margin-top: 20px;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-item.active {
+            background-color: var(--primary-color);
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logout-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--dark-color);
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .appointment-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .appointment-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .status-pending {
+            color: #f39c12;
+        }
+        
+        .status-confirmed {
+            color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Patient Portal</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active">
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item">
+                    <span>My Appointments</span>
+                </div>
+                <div class="nav-item">
+                    <span>Medical Records</span>
+                </div>
+                <div class="nav-item">
+                    <span>Prescriptions</span>
+                </div>
+                <div class="nav-item">
+                    <span>Billing</span>
+                </div>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header">
+                <h3>Patient Dashboard</h3>
+                <div class="user-info">
+                    <span>Welcome, <strong>${user.username}</strong></span>
+                    <form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
+                        <button type="submit" class="logout-btn">Logout</button>
+                    </form>
+                </div>
+            </header>
+            
+            <!-- Upcoming Appointments -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Upcoming Appointments</span>
+                    <button class="btn btn-primary">Book New</button>
+                </div>
+                
+                <div class="appointment-card">
+                    <div class="appointment-info">
+                        <strong>Dr. Smith</strong>
+                        <span class="status-confirmed">Confirmed</span>
+                    </div>
+                    <div>Cardiology Consultation</div>
+                    <div>Tomorrow, 10:30 AM</div>
+                </div>
+                
+                <div class="appointment-card">
+                    <div class="appointment-info">
+                        <strong>Dr. Johnson</strong>
+                        <span class="status-pending">Pending</span>
+                    </div>
+                    <div>Annual Physical Exam</div>
+                    <div>June 15, 2:00 PM</div>
+                </div>
+            </div>
+            
+            <!-- Quick Access -->
+            <div class="card-container" style="margin-top: 20px;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Medical Records</span>
+                    </div>
+                    <p>View your complete medical history</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">View Records</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Prescriptions</span>
+                    </div>
+                    <p>Access your current medications</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">View Prescriptions</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Billing</span>
+                    </div>
+                    <p>View and pay your bills online</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">View Bills</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>

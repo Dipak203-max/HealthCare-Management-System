@@ -1,0 +1,51 @@
+package controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.AppointmentDao;
+import model.User;
+import java.io.IOException;
+import java.sql.SQLException;
+
+@WebServlet("/ManageAppointmentServlet")
+public class ManageAppointmentServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/view/login.jsp");
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+        if (!"doctor".equals(user.getRole())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only doctors can manage appointments");
+            return;
+        }
+
+        int appointmentId = Integer.parseInt(request.getParameter("appointmentId"));
+        String action = request.getParameter("action");
+
+        try {
+            AppointmentDao appointmentDao = new AppointmentDao();
+            String status = "scheduled".equals(action) ? "scheduled" : "rejected";
+            
+            boolean success = appointmentDao.updateAppointmentStatus(appointmentId, status);
+            
+            if (success) {
+                session.setAttribute("message", "Appointment has been " + status);
+            } else {
+                session.setAttribute("error", "Failed to update appointment status");
+            }
+        } catch (SQLException e) {
+            session.setAttribute("error", "Database error: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        response.sendRedirect(request.getContextPath() + "/DoctorAppointmentsServlet");
+    }
+}

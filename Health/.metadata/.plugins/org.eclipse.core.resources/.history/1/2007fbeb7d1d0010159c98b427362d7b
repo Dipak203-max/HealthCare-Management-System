@@ -1,0 +1,46 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import model.PasswordResetDTO;
+import model.User;
+import util.DBUtil;
+
+public class UserDao {
+    
+    // Existing methods...
+    
+    public boolean resetUserPassword(int userId, String newPassword) throws SQLException {
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, newPassword);
+            statement.setInt(2, userId);
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public List<PasswordResetDTO> getAllUsersForPasswordReset() throws SQLException {
+        List<PasswordResetDTO> users = new ArrayList<>();
+        String sql = "SELECT id, username, role FROM users ORDER BY username";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            while (resultSet.next()) {
+                PasswordResetDTO user = new PasswordResetDTO();
+                user.setUserId(resultSet.getInt("id"));
+                user.setUsername(resultSet.getString("username"));
+                user.setRole(resultSet.getString("role"));
+                users.add(user);
+            }
+        }
+        return users;
+    }
+}

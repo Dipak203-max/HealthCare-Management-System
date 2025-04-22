@@ -1,0 +1,42 @@
+package dao;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import model.MedicalRecord;
+import util.DBUtil;
+
+public class MedicalRecordDao {
+    public List<MedicalRecord> getAllMedicalRecords() {
+        List<MedicalRecord> records = new ArrayList<>();
+        String sql = "SELECT mr.record_id, mr.patient_id, mr.doctor_id, " +
+                     "mr.diagnosis, mr.treatment, mr.created_at, " +
+                     "p.name AS patient_name, d.name AS doctor_name " +
+                     "FROM medical_records mr " +
+                     "JOIN patients p ON mr.patient_id = p.patient_id " +
+                     "JOIN doctors d ON mr.doctor_id = d.doctor_id " +
+                     "ORDER BY mr.created_at DESC";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            while (resultSet.next()) {
+                MedicalRecord record = new MedicalRecord();
+                record.setRecordId(resultSet.getInt("record_id"));
+                record.setPatientId(resultSet.getInt("patient_id"));
+                record.setDoctorId(resultSet.getInt("doctor_id"));
+                record.setDiagnosis(resultSet.getString("diagnosis"));
+                record.setTreatment(resultSet.getString("treatment"));
+                record.setCreatedAt(resultSet.getTimestamp("created_at"));
+                record.setPatientName(resultSet.getString("patient_name"));
+                record.setDoctorName(resultSet.getString("doctor_name"));
+                
+                records.add(record);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return records;
+    }
+}

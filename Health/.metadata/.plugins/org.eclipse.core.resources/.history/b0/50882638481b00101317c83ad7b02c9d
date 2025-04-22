@@ -1,0 +1,56 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import util.DBUtil;
+
+public class UserSettingsDao {
+    public boolean updateUsername(int userId, String newUsername) throws SQLException {
+        String sql = "UPDATE users SET username = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, newUsername);
+            statement.setInt(2, userId);
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean updatePassword(int userId, String newPassword) throws SQLException {
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, newPassword);
+            statement.setInt(2, userId);
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean verifyCurrentPassword(int userId, String password) throws SQLException {
+        String sql = "SELECT password FROM users WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, userId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    // For plain text passwords (not recommended for production)
+                    return resultSet.getString("password").equals(password);
+                    
+                    // For encrypted passwords (recommended):
+                    // return PasswordUtil.checkPassword(password, resultSet.getString("password"));
+                }
+                return false;
+            }
+        }
+    }
+}

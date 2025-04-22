@@ -1,0 +1,789 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3a0ca3;
+    --accent-color: #7209b7;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --success-color: #4cc9f0;
+    --info-color: #4895ef;
+    --warning-color: #f72585;
+    --danger-color: #ef233c;
+    --sidebar-width: 250px;
+    --nav-height: 70px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    background-color: #f5f7fb;
+    color: #333;
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top Navigation Styles */
+.top-nav {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: var(--nav-height);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 0.75rem;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.nav-link i {
+    font-size: 1rem;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link-text {
+    display: inline;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.user-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+.logout-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.logout-btn:hover {
+    background-color: #d90429;
+    transform: translateY(-2px);
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.breadcrumb {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-left: 4px solid var(--primary-color);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.card-icon {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    background-color: rgba(67, 97, 238, 0.1);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-title {
+    font-size: 1rem;
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.card-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0.5rem 0;
+}
+
+.card-footer {
+    margin-top: 0.75rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Recent Activity Section */
+.activity-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-top: 1.5rem;
+}
+
+.activity-header {
+    margin-bottom: 1rem;
+}
+
+.activity-title {
+    font-size: 1.25rem;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.activity-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.activity-table th {
+    text-align: left;
+    padding: 0.5rem;
+    color: #6c757d;
+    font-weight: 500;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.activity-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.activity-event {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.event-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.event-text {
+    font-weight: 500;
+}
+
+.event-user {
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.event-time {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Footer Styles */
+.footer {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.3s;
+    font-size: 0.85rem;
+}
+
+.footer-link:hover {
+    color: white;
+}
+
+.copyright {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .nav-menu {
+        gap: 0.5rem;
+    }
+    
+    .nav-link {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+    
+    .nav-menu {
+        position: fixed;
+        top: var(--nav-height);
+        left: -100%;
+        width: 280px;
+        height: calc(100vh - var(--nav-height));
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        flex-direction: column;
+        gap: 0;
+        padding: 1rem 0;
+        transition: left 0.3s ease;
+        z-index: 999;
+        overflow-y: auto;
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+    }
+    
+    .nav-link.active {
+        border-left-color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .user-actions {
+        margin-left: auto;
+    }
+    
+    .card-container {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .brand-logo {
+        font-size: 1.3rem;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .card-container {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .user-name {
+        display: none;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .footer-links {
+        order: 1;
+    }
+    
+    .copyright {
+        order: 2;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-container {
+        padding: 0 0.5rem;
+    }
+    
+    .logout-btn span {
+        display: none;
+    }
+    
+    .logout-btn {
+        padding: 0.5rem;
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+    }
+    
+    .activity-table th, 
+    .activity-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .event-text {
+        font-size: 0.85rem;
+    }
+}
+
+/* Mobile menu overlay */
+.mobile-menu-overlay {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--nav-height));
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-menu-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+</style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="brand">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="brand-logo">Healthcare Admin</span>
+                </div>
+                
+                <ul class="nav-menu" id="navMenu">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-link active">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span class="nav-link-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/DoctorListServlet" class="nav-link">
+                            <i class="fas fa-user-md"></i>
+                            <span class="nav-link-text">Doctors</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/PatientListServlet" class="nav-link">
+                            <i class="fas fa-procedures"></i>
+                            <span class="nav-link-text">Patients</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/AppointmentListServlet" class="nav-link">
+                            <i class="fas fa-calendar-check"></i>
+                            <span class="nav-link-text">Appointments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/MedicalRecordListServlet" class="nav-link">
+                            <i class="fas fa-file-medical"></i>
+                            <span class="nav-link-text">Medical Records</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="user-actions">
+                    <div class="user-info">
+                        <div class="user-avatar">${user.username.charAt(0)}</div>
+                        <span class="user-name">${user.username}</span>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
+                        <button type="submit" class="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Admin Dashboard</h1>
+                <div class="breadcrumb">
+                    <span>Home</span> / <span>Dashboard</span>
+                </div>
+            </div>
+
+            <div class="card-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Total Doctors</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">${doctorCount}</div>
+                    <div class="card-footer">
+                        <a href="${pageContext.request.contextPath}/DoctorListServlet" class="btn btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View All
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Total Patients</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-procedures"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">${patientCount}</div>
+                    <div class="card-footer">
+                        <a href="${pageContext.request.contextPath}/PatientListServlet" class="btn btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View All
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Today's Appointments</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">${todayAppointments}</div>
+                    <div class="card-footer">
+                        <a href="${pageContext.request.contextPath}/AppointmentListServlet" class="btn btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View All
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pending Requests</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">${pendingRequests}</div>
+                    <div class="card-footer">
+                        <a href="${pageContext.request.contextPath}/AppointmentListServlet?status=scheduled" class="btn btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View All
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="activity-card">
+                <div class="activity-header">
+                    <h2 class="activity-title">Recent Activity</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>User</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="activity-event">
+                                        <div class="event-icon">
+                                            <i class="fas fa-calendar-plus"></i>
+                                        </div>
+                                        <span class="event-text">New appointment booked</span>
+                                    </div>
+                                </td>
+                                <td class="event-user">Dr. Smith</td>
+                                <td class="event-time">10 minutes ago</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="activity-event">
+                                        <div class="event-icon">
+                                            <i class="fas fa-user-edit"></i>
+                                        </div>
+                                        <span class="event-text">Patient record updated</span>
+                                    </div>
+                                </td>
+                                <td class="event-user">Nurse Johnson</td>
+                                <td class="event-time">25 minutes ago</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="activity-event">
+                                        <div class="event-icon">
+                                            <i class="fas fa-user-plus"></i>
+                                        </div>
+                                        <span class="event-text">New doctor registered</span>
+                                    </div>
+                                </td>
+                                <td class="event-user">System</td>
+                                <td class="event-time">1 hour ago</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="activity-event">
+                                        <div class="event-icon">
+                                            <i class="fas fa-prescription"></i>
+                                        </div>
+                                        <span class="event-text">New prescription created</span>
+                                    </div>
+                                </td>
+                                <td class="event-user">Dr. Williams</td>
+                                <td class="event-time">2 hours ago</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About</a>
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+                <div class="copyright">
+                    &copy; 2023 Healthcare Admin System. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navMenu = document.getElementById('navMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            mobileMenuOverlay.classList.toggle('active');
+        });
+        
+        mobileMenuOverlay.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+        
+        // Close menu when clicking on a link (for single page applications)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+            });
+        });
+        
+        // Resize observer to handle layout changes
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 992) {
+                navMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

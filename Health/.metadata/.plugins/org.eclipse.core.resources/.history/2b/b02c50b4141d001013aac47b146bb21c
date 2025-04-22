@@ -1,0 +1,48 @@
+package controller;
+
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Time;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import dao.AppointmentDao;
+import model.Appointment;
+
+@WebServlet("/AddAppointmentServlet")
+public class AddAppointmentServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        int patientId = Integer.parseInt(request.getParameter("patientId"));
+        int doctorId = Integer.parseInt(request.getParameter("doctorId"));
+        Date date = Date.valueOf(request.getParameter("date"));
+        Time time = Time.valueOf(request.getParameter("time") + ":00");
+        String status = request.getParameter("status");
+        
+        Appointment appointment = new Appointment();
+        appointment.setPatientId(patientId);
+        appointment.setDoctorId(doctorId);
+        appointment.setDate(date);
+        appointment.setTime(time);
+        appointment.setStatus(status);
+        
+        try {
+            AppointmentDao appointmentDao = new AppointmentDao();
+            boolean success = appointmentDao.addAppointment(appointment);
+            
+            if (success) {
+                request.getSession().setAttribute("message", "Appointment scheduled successfully");
+            } else {
+                request.getSession().setAttribute("error", "Failed to schedule appointment");
+            }
+        } catch (SQLException e) {
+            request.getSession().setAttribute("error", "Database error: " + e.getMessage());
+        }
+        
+        response.sendRedirect(request.getContextPath() + "/AppointmentListServlet");
+    }
+}

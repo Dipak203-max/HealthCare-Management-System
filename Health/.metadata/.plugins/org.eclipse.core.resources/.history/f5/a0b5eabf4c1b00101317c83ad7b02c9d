@@ -1,0 +1,127 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import model.User;
+import util.DBUtil;
+
+public class UserSettingsDao {
+    public boolean updateUsername(int userId, String newUsername) throws SQLException {
+        String sql = "UPDATE users SET username = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, newUsername);
+            statement.setInt(2, userId);
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean updatePassword(int userId, String newPassword) throws SQLException {
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, newPassword);
+            statement.setInt(2, userId);
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean verifyCurrentPassword(int userId, String password) throws SQLException {
+        String sql = "SELECT password FROM users WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, userId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    // For plain text passwords (not recommended for production)
+                    return resultSet.getString("password").equals(password);
+                    
+                    // For encrypted passwords (recommended):
+                    // return PasswordUtil.checkPassword(password, resultSet.getString("password"));
+                }
+                return false;
+            }
+        }  
+    }
+    
+    public User getUserDetails(int userId) throws SQLException {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, userId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    User user = new User();
+                    user.setId(resultSet.getInt("id"));
+                    user.setUsername(resultSet.getString("username"));
+                    user.setRole(resultSet.getString("role"));
+                    return user;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public boolean updateUserDetails(User user) throws SQLException {
+        String sql = "UPDATE users SET username = ?, role = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, user.getUsername());
+            statement.setString(2, user.getRole());
+            statement.setInt(3, user.getId());
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean resetUserPassword(int userId, String newPassword) throws SQLException {
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, newPassword);
+            statement.setInt(2, userId);
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public List<User> getAllNonAdminUsers() throws SQLException {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE role != 'admin'";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            while (resultSet.next()) {
+                User user = new User();
+                user.setId(resultSet.getInt("id"));
+                user.setUsername(resultSet.getString("username"));
+                user.setRole(resultSet.getString("role"));
+                users.add(user);
+            }
+        }
+        return users;
+    }
+}

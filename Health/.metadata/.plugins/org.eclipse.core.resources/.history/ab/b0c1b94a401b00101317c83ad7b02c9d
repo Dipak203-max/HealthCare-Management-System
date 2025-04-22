@@ -1,0 +1,94 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import model.Patient;
+import util.DBUtil;
+
+public class PatientDao {
+	public List<Patient> getAllPatients() {
+	    List<Patient> patients = new ArrayList<>();
+	    
+	    // Start with simple query - remove JOIN temporarily
+	    String sql = "SELECT patient_id, id, name, phone FROM patients";
+	    
+	    System.out.println("DEBUG: Executing patient query: " + sql);
+	    
+	    try (Connection connection = DBUtil.getConnection();
+	         PreparedStatement statement = connection.prepareStatement(sql);
+	         ResultSet resultSet = statement.executeQuery()) {
+	        
+	        System.out.println("DEBUG: Query executed, checking results...");
+	        
+	        while (resultSet.next()) {
+	            Patient patient = new Patient();
+	            patient.setPatientId(resultSet.getInt("patient_id"));
+	            patient.setUserId(resultSet.getInt("id"));
+	            patient.setName(resultSet.getString("name"));
+	            patient.setPhone(resultSet.getString("phone"));
+	            
+	            System.out.println("DEBUG: Found patient - ID: " + patient.getPatientId() 
+	                + ", Name: " + patient.getName());
+	            
+	            patients.add(patient);
+	        }
+	        
+	        System.out.println("DEBUG: Total patients found: " + patients.size());
+	        
+	    } catch (SQLException e) {
+	        System.err.println("ERROR in getAllPatients: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return patients;
+	}
+	
+
+	
+	
+	public boolean addPatient(Patient patient, String password) throws SQLException {
+        Connection connection = null;
+        try {
+            connection = DBUtil.getConnection();
+            connection.setAutoCommit(false); // Start transaction
+            
+            // 1. First create the user
+            String userSql = "INSERT INTO users (username, password, role) VALUES (?, ?, 'patient')";
+            try (PreparedStatement userStmt = connection.prepareStatement(userSql, Statement.RETURN_GENERATED_KEYS)) {
+                // Create username by converting name to lowercase and removing spaces
+                String username = patient.getName().toLowerCase().replace(" ", "");
+                userStmt.setString(1, username);
+                userStmt.setString(2, password);
+                userStmt.executeUpdate();
+                
+                // Get the generated user ID
+                try (ResultSet rs = userStmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int userId = rs.getInt(1);
+                        
+                        // 2. Now create the patient with this user ID
+                        String patientSql = "INSERT INTO patients (id, name, phone) VALUES (?, ?, ?)";
+                        try (PreparedStatement patientStmt = connection.prepareStatement(patientSql)) {
+                            patientStmt.setInt(1, userId);
+                            patientStmt.setString(2, patient.getName());
+                            patientStmt.setString(3, patient.getPhone());
+                            patientStmt.executeUpdate();
+                        }
+                    }
+                }
+            }
+            connection.commit();
+            return true;
+        } catch (SQLException e) {
+            if (connection != null) connection.rollback();
+            throw e;
+        } finally {
+            if (connection != null) connection.close();
+        }
+    }
+}
+

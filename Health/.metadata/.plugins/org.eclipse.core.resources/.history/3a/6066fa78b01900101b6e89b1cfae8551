@@ -1,0 +1,32 @@
+package filter;
+import java.util.HashMap;
+import java.util.Map;
+
+public class AuthenticationFilter {
+
+    // Simulated session storage
+    private static Map<String, Object> session = new HashMap<>();
+
+    public static void main(String[] args) {
+        // Simulate incoming request
+        String uri = "/dashboard.jsp";
+
+        // Simulate session data
+        session.put("user", "admin"); // Comment this line to simulate not-logged-in
+
+        // Check if request is allowed
+        if (isAllowed(uri)) {
+            System.out.println("Request allowed to: " + uri);
+        } else {
+            System.out.println("Redirecting to login.jsp");
+        }
+    }
+
+    public static boolean isAllowed(String uri) {
+        boolean loggedIn = session.get("user") != null;
+        boolean loginRequest = uri.endsWith("login.jsp") || uri.endsWith("LoginServlet");
+        boolean resourceRequest = uri.contains("/css/") || uri.contains("/js/") || uri.contains("/images/");
+
+        return loggedIn || loginRequest || resourceRequest;
+    }
+}

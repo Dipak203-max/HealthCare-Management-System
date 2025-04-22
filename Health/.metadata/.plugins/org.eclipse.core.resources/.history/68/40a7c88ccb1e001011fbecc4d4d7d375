@@ -1,0 +1,203 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+
+
+import model.Doctor;
+import util.DBUtil;
+
+public class DoctorDao {
+	public List<Doctor> getAllDoctors() {
+	    List<Doctor> doctors = new ArrayList<>();
+	    String sql = "SELECT doctor_id, id, name, specialization FROM doctors";
+	    
+	    
+	    try (Connection connection = DBUtil.getConnection();
+	         PreparedStatement statement = connection.prepareStatement(sql);
+	         ResultSet resultSet = statement.executeQuery()) {
+	        
+	        while (resultSet.next()) {
+	            Doctor doctor = new Doctor();
+	            doctor.setDoctorId(resultSet.getInt("doctor_id"));
+	            doctor.setUserId(resultSet.getInt("id"));  
+	            doctor.setName(resultSet.getString("name"));
+	            doctor.setSpecialization(resultSet.getString("specialization"));
+	            
+	            System.out.println("Found doctor: " + doctor.getName()); 
+	            doctors.add(doctor);
+	        }
+	        
+	        System.out.println("Total doctors found: " + doctors.size()); 
+	    } catch (SQLException e) {
+	        System.err.println("Error in getAllDoctors: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return doctors;
+	}
+	
+	// In DoctorDao.java
+	public boolean addDoctor(Doctor doctor, String password) throws SQLException {
+	    Connection connection = null;
+	    try {
+	        connection = DBUtil.getConnection();
+	        connection.setAutoCommit(false); // Start transaction
+	        
+	        // 1. First create the user
+	        String userSql = "INSERT INTO users (username, password, role) VALUES (?, ?, 'doctor')";
+	        try (PreparedStatement userStmt = connection.prepareStatement(userSql, Statement.RETURN_GENERATED_KEYS)) {
+	            userStmt.setString(1, doctor.getName().toLowerCase().replace(" ", ""));
+	            userStmt.setString(2, password);
+	            userStmt.executeUpdate();
+	            
+	            // Get the generated user ID
+	            try (ResultSet rs = userStmt.getGeneratedKeys()) {
+	                if (rs.next()) {
+	                    int userId = rs.getInt(1);
+	                    
+	                    // 2. Now create the doctor with this user ID
+	                    String doctorSql = "INSERT INTO doctors (id, name, specialization) VALUES (?, ?, ?)";
+	                    try (PreparedStatement doctorStmt = connection.prepareStatement(doctorSql)) {
+	                        doctorStmt.setInt(1, userId);
+	                        doctorStmt.setString(2, doctor.getName());
+	                        doctorStmt.setString(3, doctor.getSpecialization());
+	                        doctorStmt.executeUpdate();
+	                    }
+	                }
+	            }
+	        }
+	        connection.commit();
+	        return true;
+	    } catch (SQLException e) {
+	        if (connection != null) connection.rollback();
+	        throw e;
+	    } finally {
+	        if (connection != null) connection.close();
+	    }
+	}
+	
+	
+	public boolean updateDoctor(Doctor doctor) throws SQLException {
+        String sql = "UPDATE doctors SET name = ?, specialization = ? WHERE doctor_id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, doctor.getName());
+            statement.setString(2, doctor.getSpecialization());
+            statement.setInt(3, doctor.getDoctorId());
+            
+            return statement.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean deleteDoctor(int doctorId) throws SQLException {
+        Connection connection = null;
+        try {
+            connection = DBUtil.getConnection();
+            connection.setAutoCommit(false);
+            
+            // 1. First get the user ID to delete from users table
+            String getUserIdSql = "SELECT id FROM doctors WHERE doctor_id = ?";
+            int userId = 0;
+            
+            try (PreparedStatement getStmt = connection.prepareStatement(getUserIdSql)) {
+                getStmt.setInt(1, doctorId);
+                try (ResultSet rs = getStmt.executeQuery()) {
+                    if (rs.next()) {
+                        userId = rs.getInt("id");
+                    }
+                }
+            }
+            
+            // 2. Delete all appointments for this doctor first
+            String deleteAppointmentsSql = "DELETE FROM appointments WHERE doctor_id = ?";
+            try (PreparedStatement appointmentsStmt = connection.prepareStatement(deleteAppointmentsSql)) {
+                appointmentsStmt.setInt(1, doctorId);
+                appointmentsStmt.executeUpdate();
+            }
+            
+            // 3. Delete all medical records for this doctor
+            String deleteRecordsSql = "DELETE FROM medical_records WHERE doctor_id = ?";
+            try (PreparedStatement recordsStmt = connection.prepareStatement(deleteRecordsSql)) {
+                recordsStmt.setInt(1, doctorId);
+                recordsStmt.executeUpdate();
+            }
+            
+            // 4. Delete from doctors table
+            String deleteDoctorSql = "DELETE FROM doctors WHERE doctor_id = ?";
+            try (PreparedStatement doctorStmt = connection.prepareStatement(deleteDoctorSql)) {
+                doctorStmt.setInt(1, doctorId);
+                doctorStmt.executeUpdate();
+            }
+            
+            // 5. Delete from users table
+            if (userId > 0) {
+                String deleteUserSql = "DELETE FROM users WHERE id = ?";
+                try (PreparedStatement userStmt = connection.prepareStatement(deleteUserSql)) {
+                    userStmt.setInt(1, userId);
+                    userStmt.executeUpdate();
+                }
+            }
+            
+            connection.commit();
+            return true;
+        } catch (SQLException e) {
+            if (connection != null) connection.rollback();
+            throw e;
+        } finally {
+            if (connection != null) connection.close();
+        }
+    }
+    
+    public Doctor getDoctorById(int doctorId) throws SQLException {
+        String sql = "SELECT * FROM doctors WHERE doctor_id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, doctorId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    Doctor doctor = new Doctor();
+                    doctor.setDoctorId(resultSet.getInt("doctor_id"));
+                    doctor.setUserId(resultSet.getInt("id"));
+                    doctor.setName(resultSet.getString("name"));
+                    doctor.setSpecialization(resultSet.getString("specialization"));
+                    return doctor;
+                }
+            }
+        }
+        return null;
+    }
+    
+    
+    public Doctor getDoctorByUserId(int userId) throws SQLException {
+        String sql = "SELECT * FROM doctors WHERE id = ?";
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setInt(1, userId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    Doctor doctor = new Doctor();
+                    doctor.setDoctorId(resultSet.getInt("doctor_id"));
+                    doctor.setUserId(resultSet.getInt("id"));
+                    doctor.setName(resultSet.getString("name"));
+                    doctor.setSpecialization(resultSet.getString("specialization"));
+                    return doctor;
+                }
+            }
+        }
+        return null;
+    }
+}

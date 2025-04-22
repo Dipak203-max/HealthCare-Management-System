@@ -1,0 +1,68 @@
+package controller;
+
+import java.io.IOException;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import dao.UserDao;
+import model.User;
+import util.PropertyUtil;
+
+@WebServlet("/LoginServlet")
+
+
+public class LoginServlet extends HttpServlet {
+	
+	public void init() throws ServletException {
+	    System.out.println(getClass().getSimpleName() + " initialized");
+	}
+	
+    private static final long serialVersionUID = 1L;
+    
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    	resp.sendRedirect(req.getContextPath() + "/view/login.jsp");
+    }
+    
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String role = request.getParameter("role");
+        
+        UserDao userDao = new UserDao();
+        User user = userDao.getUserByCredentials(username, password, role);
+        
+        if (user != null) {
+            HttpSession session = request.getSession();
+            session.setAttribute("user", user);
+            
+            String redirectPage;
+            switch(user.getRole()) {
+                case "admin":
+                    redirectPage = "/view/adminDashboard.jsp";
+                    break;
+                case "doctor":
+                    redirectPage = "/view/doctorDashboard.jsp";
+                    break;
+                case "patient":
+                    redirectPage = "/view/patientDashboard.jsp";
+                    break;
+                default:
+                    redirectPage = "/view/error.jsp";
+            }
+            
+            // Use forward instead of redirect to maintain the request context
+            request.getRequestDispatcher(redirectPage).forward(request, response);
+        } else {
+            request.setAttribute("errorMessage", "Invalid username or password");
+            request.getRequestDispatcher("/view/login.jsp").forward(request, response);
+        }
+    }
+}

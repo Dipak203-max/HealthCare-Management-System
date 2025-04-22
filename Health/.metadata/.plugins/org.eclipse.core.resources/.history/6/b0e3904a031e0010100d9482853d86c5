@@ -1,0 +1,82 @@
+package controller;
+
+import java.io.IOException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import dao.PatientDao;
+import model.Patient;
+
+@WebServlet("/RegisterPatientServlet")
+public class RegisterPatientServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        // Get form parameters
+        String name = request.getParameter("name");
+        String phone = request.getParameter("phone");
+        String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
+        
+        // Validate inputs
+        if (name == null || name.trim().isEmpty() ||
+            phone == null || phone.trim().isEmpty() ||
+            password == null || password.trim().isEmpty()) {
+            
+            request.setAttribute("errorMessage", "All fields are required");
+            request.getRequestDispatcher("/view/register.jsp").forward(request, response);
+            return;
+        }
+        
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("errorMessage", "Passwords do not match");
+            request.getRequestDispatcher("/view/register.jsp").forward(request, response);
+            return;
+        }
+        
+        // Validate phone number format (10-15 digits)
+        if (!phone.matches("^[0-9]{10,15}$")) {
+            request.setAttribute("errorMessage", "Invalid phone number format. Please enter 10-15 digits.");
+            request.getRequestDispatcher("/view/register.jsp").forward(request, response);
+            return;
+        }
+        
+        // Validate password strength
+        if (!password.matches("^(?=.*[A-Z])(?=.*\\d).{8,}$")) {
+            request.setAttribute("errorMessage", 
+                "Password must be at least 8 characters long and contain at least one uppercase letter and one number");
+            request.getRequestDispatcher("/view/register.jsp").forward(request, response);
+            return;
+        }
+        
+        try {
+            // Create patient object
+            Patient patient = new Patient();
+            patient.setName(name);
+            patient.setPhone(phone);
+            
+            // Add patient to database
+            PatientDao patientDao = new PatientDao();
+            boolean success = patientDao.addPatient(patient, password);
+            
+            if (success) {
+                request.setAttribute("successMessage", 
+                    "Registration successful! You can now login with your credentials.");
+                request.getRequestDispatcher("/view/register.jsp").forward(request, response);
+            } else {
+                request.setAttribute("errorMessage", 
+                    "Registration failed. Please try again or contact support.");
+                request.getRequestDispatcher("/view/register.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("errorMessage", 
+                "An error occurred during registration: " + e.getMessage());
+            request.getRequestDispatcher("/view/register.jsp").forward(request, response);
+        }
+    }
+}

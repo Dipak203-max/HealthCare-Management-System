@@ -1,0 +1,42 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import model.Doctor;
+import util.DBUtil;
+
+public class DoctorDao {
+	public List<Doctor> getAllDoctors() {
+	    List<Doctor> doctors = new ArrayList<>();
+	    // Simplified query - use only the doctors table first
+	    String sql = "SELECT doctor_id, id, name, specialization FROM doctors";
+	    
+	    System.out.println("Executing query: " + sql); // Debug line
+	    
+	    try (Connection connection = DBUtil.getConnection();
+	         PreparedStatement statement = connection.prepareStatement(sql);
+	         ResultSet resultSet = statement.executeQuery()) {
+	        
+	        while (resultSet.next()) {
+	            Doctor doctor = new Doctor();
+	            doctor.setDoctorId(resultSet.getInt("doctor_id"));
+	            doctor.setUserId(resultSet.getInt("id"));  // Matches your DB column
+	            doctor.setName(resultSet.getString("name"));
+	            doctor.setSpecialization(resultSet.getString("specialization"));
+	            
+	            System.out.println("Found doctor: " + doctor.getName()); // Debug
+	            doctors.add(doctor);
+	        }
+	        
+	        System.out.println("Total doctors found: " + doctors.size()); // Debug
+	    } catch (SQLException e) {
+	        System.err.println("Error in getAllDoctors: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return doctors;
+	}
+}

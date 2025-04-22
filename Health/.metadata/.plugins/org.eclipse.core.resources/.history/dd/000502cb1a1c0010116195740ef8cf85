@@ -1,0 +1,1146 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary-color: #6c5ce7;
+    --primary-light: #a29bfe;
+    --primary-dark: #5649c0;
+    --secondary-color: #00cec9;
+    --accent-color: #fd79a8;
+    --light-color: #f8f9fa;
+    --dark-color: #121212;
+    --darker-color: #0a0a0a;
+    --darkest-color: #050505;
+    --gray-color: #b0b0b0;
+    --dark-gray: #2d3436;
+    --light-gray: #636e72;
+    --success-color: #00b894;
+    --info-color: #0984e3;
+    --warning-color: #fdcb6e;
+    --danger-color: #d63031;
+    --sidebar-width: 260px;
+    --nav-height: 70px;
+    --card-radius: 12px;
+    --transition-speed: 0.3s;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.2);
+    --card-bg: #1e1e1e;
+    --nav-bg: #121212;
+    --hover-bg: #2d2d2d;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top Navigation Styles */
+.top-nav {
+    background: var(--nav-bg);
+    color: var(--light-color);
+    padding: 0 1.5rem;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: var(--nav-height);
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-logo i {
+    color: var(--accent-color);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--light-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform var(--transition-speed);
+}
+
+.mobile-menu-btn:hover {
+    transform: scale(1.1);
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 1rem;
+    margin-left: 2rem;
+}
+
+.nav-link {
+    color: var(--gray-color);
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: all var(--transition-speed) ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    position: relative;
+}
+
+.nav-link i {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.nav-link:hover {
+    color: var(--primary-light);
+    background-color: var(--hover-bg);
+}
+
+.nav-link.active {
+    color: var(--primary-light);
+    background-color: var(--hover-bg);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.user-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    font-weight: 500;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem 0;
+    min-width: 200px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all var(--transition-speed);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-info:hover .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-dropdown-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.75rem 1rem;
+    color: var(--light-color);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+}
+
+.user-dropdown-link:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-light);
+}
+
+.user-dropdown-link i {
+    width: 20px;
+    color: var(--gray-color);
+}
+
+.logout-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    color: var(--light-color);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-title i {
+    color: var(--primary-color);
+}
+
+.breadcrumb {
+    font-size: 0.9rem;
+    color: var(--gray-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.breadcrumb a {
+    color: var(--gray-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+}
+
+.breadcrumb a:hover {
+    color: var(--primary-light);
+}
+
+.breadcrumb .separator {
+    opacity: 0.6;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: var(--card-bg);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    border-top: 4px solid var(--primary-color);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(253, 121, 168, 0.05));
+    z-index: 0;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(255,255,255,0.1);
+}
+
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card-title {
+    font-size: 1rem;
+    color: var(--gray-color);
+    font-weight: 500;
+}
+
+.stat-card-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    background-color: rgba(108, 92, 231, 0.1);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--light-color);
+    margin: 0.5rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card-footer {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card-link {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all var(--transition-speed);
+}
+
+.stat-card-link:hover {
+    color: var(--primary-color);
+    gap: 8px;
+}
+
+.stat-card-link i {
+    font-size: 0.8rem;
+    transition: all var(--transition-speed);
+}
+
+.stat-card-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.trend-up {
+    color: var(--success-color);
+}
+
+.trend-down {
+    color: var(--danger-color);
+}
+
+/* Charts and Activity Section */
+.dashboard-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-card, .activity-card {
+    background-color: var(--card-bg);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.chart-header, .activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title, .activity-title {
+    font-size: 1.25rem;
+    color: var(--light-color);
+    font-weight: 600;
+}
+
+.chart-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chart-period-selector {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.85rem;
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.chart-period-selector:hover {
+    border-color: var(--primary-color);
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Activity Styles */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(108, 92, 231, 0.1);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-event {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--light-color);
+}
+
+.activity-details {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--gray-color);
+}
+
+.activity-user {
+    color: var(--primary-light);
+    font-weight: 500;
+}
+
+.activity-time {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.activity-time i {
+    font-size: 0.75rem;
+}
+
+/* Recent Patients Table */
+.recent-patients {
+    background-color: var(--card-bg);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.patients-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.patients-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    color: var(--gray-color);
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.patients-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.patient-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.patient-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(108, 92, 231, 0.1);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.patient-name {
+    font-weight: 500;
+    color: var(--light-color);
+}
+
+.patient-email {
+    font-size: 0.85rem;
+    color: var(--gray-color);
+}
+
+.status-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-active {
+    background-color: rgba(0, 184, 148, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(0, 184, 148, 0.2);
+}
+
+.status-pending {
+    background-color: rgba(253, 203, 110, 0.1);
+    color: var(--warning-color);
+    border: 1px solid rgba(253, 203, 110, 0.2);
+}
+
+.status-inactive {
+    background-color: rgba(99, 110, 114, 0.1);
+    color: var(--light-gray);
+    border: 1px solid rgba(99, 110, 114, 0.2);
+}
+
+.action-link {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: color var(--transition-speed);
+}
+
+.action-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Footer Styles */
+.footer {
+    background-color: var(--nav-bg);
+    color: var(--gray-color);
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: auto;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1800px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-link {
+    color: var(--gray-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+    font-size: 0.85rem;
+}
+
+.footer-link:hover {
+    color: var(--primary-light);
+}
+
+.copyright {
+    color: var(--gray-color);
+    font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .nav-menu {
+        gap: 0.75rem;
+    }
+    
+    .nav-link {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+    
+    .nav-menu {
+        position: fixed;
+        top: var(--nav-height);
+        left: -100%;
+        width: 280px;
+        height: calc(100vh - var(--nav-height));
+        background: var(--nav-bg);
+        flex-direction: column;
+        gap: 0;
+        padding: 1rem 0;
+        transition: left var(--transition-speed) ease;
+        z-index: 999;
+        overflow-y: auto;
+        box-shadow: var(--shadow-lg);
+        border-right: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+    }
+    
+    .nav-link.active {
+        border-left-color: var(--primary-color);
+        background-color: var(--hover-bg);
+    }
+    
+    .nav-link.active::after {
+        display: none;
+    }
+    
+    .user-actions {
+        margin-left: auto;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .brand-logo {
+        font-size: 1.3rem;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .user-name {
+        display: none;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .footer-links {
+        order: 1;
+    }
+    
+    .copyright {
+        order: 2;
+    }
+}
+
+@media (max-width: 576px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    .logout-btn span {
+        display: none;
+    }
+    
+    .logout-btn {
+        padding: 0.5rem;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+    }
+    
+    .main-content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .patients-table th, 
+    .patients-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .patient-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+/* Mobile menu overlay */
+.mobile-menu-overlay {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--nav-height));
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-speed) ease;
+}
+
+.mobile-menu-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* Tooltip */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: var(--dark-gray);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+    font-size: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--dark-gray) transparent transparent transparent;
+}
+
+/* Glow effect for interactive elements */
+.stat-card, .chart-card, .activity-card, .recent-patients {
+    transition: box-shadow 0.3s ease;
+}
+
+.stat-card:hover, .chart-card:hover, .activity-card:hover, .recent-patients:hover {
+    box-shadow: 0 0 15px rgba(108, 92, 231, 0.2);
+}
+
+/* Pulse animation for notifications */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.has-notification {
+    position: relative;
+}
+
+.has-notification::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--danger-color);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+</style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="brand">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="brand-logo">
+                        <i class="fas fa-heartbeat"></i> HealthCare Admin
+                    </span>
+                </div>
+                
+                <ul class="nav-menu" id="navMenu">
+                    <li>
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span class="nav-link-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/DoctorListServlet" class="nav-link">
+                            <i class="fas fa-user-md"></i>
+                            <span class="nav-link-text">Doctors</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/PatientListServlet" class="nav-link">
+                            <i class="fas fa-procedures"></i>
+                            <span class="nav-link-text">Patients</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/AppointmentListServlet" class="nav-link">
+                            <i class="fas fa-calendar-check"></i>
+                            <span class="nav-link-text">Appointments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/MedicalRecordListServlet" class="nav-link">
+                            <i class="fas fa-file-medical"></i>
+                            <span class="nav-link-text">Medical Records</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="user-actions">
+                    <div class="user-info">
+                        <div class="user-avatar">${user.username.charAt(0)}</div>
+                        <span class="user-name">${user.username}</span>
+                        <div class="user-dropdown">
+                            <a href="#" class="user-dropdown-link">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a href="${pageContext.request.contextPath}/UserSettingsServlet" class="user-dropdown-link">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <a href="#" class="user-dropdown-link has-notification">
+                                <i class="fas fa-bell"></i> Notifications
+                            </a>
+                        </div>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
+                        <button type="submit" class="logout-btn tooltip">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                            <span class="tooltip-text">Sign out of your account</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header fade-in">
+                <h1 class="page-title">
+                    <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                </h1>
+                <div class="breadcrumb">
+                    <a href="#">Home</a> 
+                    <span class="separator">/</span> 
+                    <span>Dashboard</span>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card fade-in delay-1">
+                    <div class="stat-card-header">
+                        <h3 class="stat-card-title">Total Doctors</h3>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value">${doctorCount}</div>
+                    <div class="stat-card-footer">
+                        <a href="${pageContext.request.contextPath}/DoctorListServlet" class="stat-card-link">
+                            View all <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <div class="stat-card-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> 12%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card fade-in delay-2">
+                    <div class="stat-card-header">
+                        <h3 class="stat-card-title">Total Patients</h3>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-procedures"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value">${patientCount}</div>
+                    <div class="stat-card-footer">
+                        <a href="${pageContext.request.contextPath}/PatientListServlet" class="stat-card-link">
+                            View all <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <div class="stat-card-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> 8%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card fade-in delay-3">
+                    <div class="stat-card-header">
+                        <h3 class="stat-card-title">Today's Appointments</h3>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value">${todayAppointments}</div>
+                    <div class="stat-card-footer">
+                        <a href="${pageContext.request.contextPath}/AppointmentListServlet" class="stat-card-link">
+                            View all <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <div class="stat-card-trend trend-down">
+                            <i class="fas fa-arrow-down"></i> 3%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card fade-in delay-4">
+                    <div class="stat-card-header">
+                        <h3 class="stat-card-title">Pending Requests</h3>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value">${pendingRequests}</div>
+                    <div class="stat-card-footer">
+                        <a href="${pageContext.request.contextPath}/AppointmentListServlet?status=scheduled" class="stat-card-link">
+                            View all <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <div class="stat-card-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> 5%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Activity Section -->
+            <div class="dashboard-content">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Appointments Overview</h3>
+                        <div class="chart-actions">
+                            <select class="chart-period-selector">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 3 months</option>
+                                <option>Last year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="appointmentsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="activity-card fade-in">
+                    <div class="activity-header">
+                        <h3 class="activity-title">Recent Activity</h3>
+                    </div>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-event">New patient registered</p>
+                                <div class="activity-details">
+                                    <span class="activity-user">John Smith</span>
+                                    <span class="activity
