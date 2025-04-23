@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>HealthCare Appointment System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!-- This is css section --> 
     <style>
         :root {
             --primary-color: #3498db;
