@@ -430,30 +430,36 @@
         </div>
     </section>
     
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="images/a.avif" alt="Logo">
-                <span>HealthCare</span>
-            </div>
-            
-            <div class="footer-links">
-                <a href="#">About Us</a>
-                <a href="#">Services</a>
-                <a href="#">Doctors</a>
-                <a href="#">Contact</a>
-                <a href="#">Privacy Policy</a>
-            </div>
-            
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-            </div>
-            
-            <p class="copyright">&copy; 2023 HealthCare Appointment System. All rights reserved.</p>
+  <footer>
+    <!-- Footer content starts here -->
+    <div class="footer-content">
+        <!-- Footer logo section -->
+        <div class="footer-logo">
+            <img src="images/a.avif" alt="Logo">
+            <span>HealthCare</span>
         </div>
-    </footer>
+        
+        <!-- Footer links section -->
+        <div class="footer-links">
+            <a href="#">About Us</a>
+            <a href="#">Services</a>
+            <a href="#">Doctors</a>
+            <a href="#">Contact</a>
+            <a href="#">Privacy Policy</a>
+        </div>
+        
+        <!-- Social media icons section -->
+        <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+        
+        <!-- Copyright section -->
+        <p class="copyright">&copy; 2023 HealthCare Appointment System. All rights reserved.</p>
+    </div>
+    <!-- Footer content ends here -->
+</footer>
 </body>
 </html>
