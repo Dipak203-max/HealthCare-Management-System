@@ -732,7 +732,7 @@ body {
             </div>
         </main>
 
-        <!-- Footer -->
+        <!-- Footer section -->
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-links">
