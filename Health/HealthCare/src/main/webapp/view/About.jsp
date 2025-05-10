@@ -547,7 +547,7 @@
             });
         });
 
-        // Chat Functionality
+        // Chat Functionality implement
         function toggleChat() {
             const chatWindow = document.getElementById('chatWindow');
             chatWindow.style.display = chatWindow.style.display === 'none' || chatWindow.style.display === '' ? 'flex' : 'none';
