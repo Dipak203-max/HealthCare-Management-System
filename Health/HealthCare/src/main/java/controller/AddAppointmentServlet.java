@@ -44,13 +44,14 @@ public class AddAppointmentServlet extends HttpServlet {
             String status = "pending";
 
             Appointment appointment = new Appointment();
-            appointment.setPatientId(patient.getPatientId()); // Use the correct patient ID
+             // Use the correct patient ID
+            appointment.setPatientId(patient.getPatientId());
             appointment.setDoctorId(doctorId);
             appointment.setDate(date);
             appointment.setTime(time);
             appointment.setStatus(status);
             
-         // Before adding appointment
+         // Before adding appointments
             DoctorDao doctorDao = new DoctorDao();
             if (!doctorDao.doctorExists(appointment.getDoctorId())) {
                 session.setAttribute("error", "Selected doctor does not exist");
@@ -67,7 +68,7 @@ public class AddAppointmentServlet extends HttpServlet {
                 session.setAttribute("error", "Failed to schedule appointment");
             }
             
-            // Redirect based on user role
+            // Redirect based on user roles
             switch(user.getRole()) {
                 case "admin":
                     redirectPage = "/AppointmentListServlet";
